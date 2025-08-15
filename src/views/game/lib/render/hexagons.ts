@@ -1,0 +1,103 @@
+import type { HexCoordinate } from '../coordinates';
+import type { HexSegment } from './cell';
+
+/**
+ * HexGridMetrics interface defines the metrics for rendering hexagonal grids.
+ * This stores the dimensions of a hexagon and the spacing between them.
+ */
+export interface HexGridMetrics {
+    cellWidth: number;
+    cellHeight: number;
+    horizontalSpacing: number;
+    verticalSpacing: number;
+}
+
+/**
+ * Converts a hexagonal coordinate to canvas coordinates.
+ * This function assumes a flat-top hexagon orientation.
+ *
+ * @param coordinate The hexagonal coordinate to convert to canvas coordinates.
+ * @param metrics The precalculated metrics for the hexagonal grid.
+ * @returns The canvas coordinates (x, y) for the center of the hexagon.
+ */
+export function hexCoordinateToCanvas(coordinate: HexCoordinate, metrics: HexGridMetrics) {
+    // Flat top orientation
+    const x = coordinate.q * metrics.horizontalSpacing + metrics.cellWidth / 2;
+    const y = (coordinate.r + coordinate.q / 2) * metrics.verticalSpacing + metrics.cellHeight / 2;
+
+    return { x, y };
+}
+
+/**
+ * Draws a segment of a hexagon on the canvas.
+ * @param ctx The canvas rendering context to draw on.
+ * @param x The center x-coordinate of the hexagon.
+ * @param y The center y-coordinate of the hexagon.
+ * @param segment The segment of the hexagon to draw.
+ * @param metrics The rendering state containing cell dimensions.
+ */
+export function drawHexagonSegment(
+    ctx: CanvasRenderingContext2D,
+    x: number,
+    y: number,
+    segment: HexSegment,
+    metrics: HexGridMetrics,
+) {
+    ctx.beginPath();
+
+    switch (segment) {
+        case 0: // Top segment
+            ctx.moveTo(x - metrics.cellWidth / 4, y - metrics.cellHeight / 2);
+            ctx.lineTo(x + metrics.cellWidth / 4, y - metrics.cellHeight / 2);
+            break;
+        case 1: // Top-right segment
+            ctx.moveTo(x + metrics.cellWidth / 4, y - metrics.cellHeight / 2);
+            ctx.lineTo(x + metrics.cellWidth / 2, y);
+            break;
+        case 2: // Bottom-right segment
+            ctx.moveTo(x + metrics.cellWidth / 2, y);
+            ctx.lineTo(x + metrics.cellWidth / 4, y + metrics.cellHeight / 2);
+            break;
+        case 3: // Bottom segment
+            ctx.moveTo(x + metrics.cellWidth / 4, y + metrics.cellHeight / 2);
+            ctx.lineTo(x - metrics.cellWidth / 4, y + metrics.cellHeight / 2);
+            break;
+        case 4: // Bottom-left segment
+            ctx.moveTo(x - metrics.cellWidth / 4, y + metrics.cellHeight / 2);
+            ctx.lineTo(x - metrics.cellWidth / 2, y);
+            break;
+        case 5: // Top-left segment
+            ctx.moveTo(x - metrics.cellWidth / 2, y);
+            ctx.lineTo(x - metrics.cellWidth / 4, y - metrics.cellHeight / 2);
+            break;
+    }
+
+    ctx.stroke();
+}
+
+/**
+ * Draws debug information for a hexagon cell on the canvas.
+ * This includes the q and r coordinates of the hexagon.
+ *
+ * @param ctx The canvas rendering context to draw on.
+ * @param coordinate The hexagonal coordinate of the cell.
+ * @param metrics The rendering state containing cell dimensions.
+ */
+export function drawHexagonDebugInfo(
+    ctx: CanvasRenderingContext2D,
+    coordinate: HexCoordinate,
+    metrics: HexGridMetrics,
+) {
+    const { x, y } = hexCoordinateToCanvas(coordinate, metrics);
+
+    // Draw q coordinate below top segment
+    ctx.fillStyle = 'red';
+    ctx.font = 'bold 12px monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText(coordinate.q.toFixed(0), x, y - metrics.cellHeight / 2 + 15);
+
+    // Draw r coordinate to the left of the bottom-right segment
+    ctx.fillStyle = 'blue';
+    ctx.textAlign = 'right';
+    ctx.fillText(coordinate.r.toFixed(0), x + metrics.cellWidth * (3 / 8) - 2, y + metrics.cellHeight / 4);
+}

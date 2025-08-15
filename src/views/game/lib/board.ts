@@ -1,6 +1,6 @@
 import { useReducer, type ActionDispatch } from 'react';
 import { CellType, type CellState } from './cell';
-import type { HexCoordinate } from './coordinates';
+import { HexCoordinate } from './coordinates';
 
 /**
  * GameMetadata interface represents the metadata of a game board.
@@ -36,7 +36,7 @@ function initialiseGameState(metadata: GameMetadata): GameBoardState {
         const rOffset = Math.floor(q / 2);
         for (let r = -rOffset; r < height - rOffset; r++) {
             const cell: CellState = {
-                coordinate: { q, r },
+                coordinate: new HexCoordinate(q, r),
                 type: CellType.Blank,
             };
 
