@@ -6,6 +6,8 @@ import {
     hexCoordinateToCanvas,
     type HexGridMetrics,
 } from './lib/render/hexagons';
+import { planRender } from './lib/render/render-planner';
+import { AllHexDirections } from './lib/coordinates';
 
 const DefaultSize = 32;
 const BoardPadding = 16;
@@ -33,6 +35,10 @@ export const GameBoardUI: FC<GameBoardUIProps> = ({ meta, state, cellSize = Defa
         [cellSize],
     );
 
+    const renderPlan = useMemo(() => {
+        return planRender(meta, state);
+    }, [meta, state]);
+
     const drawBoard = () => {
         const canvas = canvasRef.current;
         if (!canvas) {
@@ -48,17 +54,24 @@ export const GameBoardUI: FC<GameBoardUIProps> = ({ meta, state, cellSize = Defa
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         ctx.translate(BoardPadding, BoardPadding);
 
-        state.cells.forEach((cell) => {
+        renderPlan.cellsToRender.forEach((cell) => {
             const { x, y } = hexCoordinateToCanvas(cell.coordinate, gridMetrics);
 
             drawHexagonDebugInfo(ctx, cell.coordinate, gridMetrics);
 
-            drawHexagonSegment(ctx, x, y, 0, gridMetrics);
-            drawHexagonSegment(ctx, x, y, 1, gridMetrics);
-            drawHexagonSegment(ctx, x, y, 2, gridMetrics);
-            drawHexagonSegment(ctx, x, y, 3, gridMetrics);
-            drawHexagonSegment(ctx, x, y, 4, gridMetrics);
-            drawHexagonSegment(ctx, x, y, 5, gridMetrics);
+            for (const direction of AllHexDirections) {
+                const segment = cell.segments[direction];
+                if (!segment || !segment.render) {
+                    ctx.lineWidth = 1;
+                    ctx.strokeStyle = 'gray';
+                    drawHexagonSegment(ctx, x, y, direction, gridMetrics);
+                    continue;
+                }
+
+                ctx.lineWidth = segment.width;
+                ctx.strokeStyle = segment.color;
+                drawHexagonSegment(ctx, x, y, direction, gridMetrics);
+            }
         });
     };
 

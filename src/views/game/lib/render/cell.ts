@@ -1,11 +1,4 @@
-import type { HexCoordinate } from '../coordinates';
-
-/**
- * HexSegment type represents a segment of a hexagon.
- * It can take values from 0 to 5, representing the six segments of a hexagon.
- * 0 is the top segment, 1 is the top-right segment, and so on in clockwise order.
- */
-export type HexSegment = 0 | 1 | 2 | 3 | 4 | 5;
+import { HexDirection, type HexCoordinate } from '../coordinates';
 
 export interface CellSegmentStyle {
     render: boolean;
@@ -15,5 +8,14 @@ export interface CellSegmentStyle {
 
 export interface CellRenderState {
     coordinate: HexCoordinate;
-    segments: Record<HexSegment, CellSegmentStyle>;
+    segments: Record<HexDirection, CellSegmentStyle | null>;
 }
+
+export const EmptySegmentRenderPattern: Record<HexDirection, CellSegmentStyle | null> = {
+    [HexDirection.UpRight]: null,
+    [HexDirection.UpLeft]: null,
+    [HexDirection.Down]: null,
+    [HexDirection.DownLeft]: null,
+    [HexDirection.DownRight]: null,
+    [HexDirection.Up]: null,
+};

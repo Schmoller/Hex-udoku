@@ -1,5 +1,4 @@
-import type { HexCoordinate } from '../coordinates';
-import type { HexSegment } from './cell';
+import type { HexCoordinate, HexDirection } from '../coordinates';
 
 /**
  * HexGridMetrics interface defines the metrics for rendering hexagonal grids.
@@ -40,7 +39,7 @@ export function drawHexagonSegment(
     ctx: CanvasRenderingContext2D,
     x: number,
     y: number,
-    segment: HexSegment,
+    segment: HexDirection,
     metrics: HexGridMetrics,
 ) {
     ctx.beginPath();
@@ -90,14 +89,31 @@ export function drawHexagonDebugInfo(
 ) {
     const { x, y } = hexCoordinateToCanvas(coordinate, metrics);
 
-    // Draw q coordinate below top segment
+    const sCoordinate = -coordinate.q - coordinate.r;
+
+    let qText = coordinate.q.toFixed(0);
+    let rText = coordinate.r.toFixed(0);
+    let sText = sCoordinate.toFixed(0);
+
+    if (coordinate.q === 0 && coordinate.r === 0) {
+        qText = 'Q';
+        rText = 'R';
+        sText = 'S';
+    }
+
+    // Draw q coordinate below top right segment
     ctx.fillStyle = 'red';
     ctx.font = 'bold 12px monospace';
-    ctx.textAlign = 'center';
-    ctx.fillText(coordinate.q.toFixed(0), x, y - metrics.cellHeight / 2 + 15);
-
-    // Draw r coordinate to the left of the bottom-right segment
-    ctx.fillStyle = 'blue';
     ctx.textAlign = 'right';
-    ctx.fillText(coordinate.r.toFixed(0), x + metrics.cellWidth * (3 / 8) - 2, y + metrics.cellHeight / 4);
+    ctx.fillText(qText, x + metrics.cellWidth * (3 / 8) - 4, y - metrics.cellHeight / 4 + 8);
+
+    // Draw r coordinate above bottom segment
+    ctx.fillStyle = 'blue';
+    ctx.textAlign = 'center';
+    ctx.fillText(rText, x, y + metrics.cellHeight / 2 - 4);
+
+    // Draw virtual s coordinate below top left segment
+    ctx.fillStyle = '#00FF0080';
+    ctx.textAlign = 'left';
+    ctx.fillText(sText, x - metrics.cellWidth * (3 / 8) + 4, y - metrics.cellHeight / 4 + 8);
 }

@@ -1,0 +1,53 @@
+import type { GameBoardState, GameMetadata } from '../board';
+import { AllHexDirections, HexCoordinate, HexDirection } from '../coordinates';
+import { EmptySegmentRenderPattern, type CellRenderState, type CellSegmentStyle } from './cell';
+
+export interface RenderPlan {
+    cellsToRender: CellRenderState[];
+}
+
+/**
+ * Generates a render plan based on the game metadata and current state of the game board.
+ * The render plan specifies which cells need to be rendered and their properties.
+ *
+ * @param meta The metadata of the game board.
+ * @param state The current state of the game board.
+ * @returns A render plan that specifies what needs to be rendered.
+ */
+export function planRender(meta: GameMetadata, state: GameBoardState): RenderPlan {
+    const cellsToRender: CellRenderState[] = [];
+    const visitedCells = new Set<HexCoordinate>();
+
+    for (const cell of state.cells.values()) {
+        visitedCells.add(cell.coordinate);
+
+        const segments: Record<HexDirection, CellSegmentStyle | null> = {
+            ...EmptySegmentRenderPattern,
+        };
+
+        // Iterate through all hex directions to determine which segments to render
+        for (const direction of AllHexDirections) {
+            const neighborCoord = cell.coordinate.next(direction);
+            if (visitedCells.has(neighborCoord)) {
+                // If the neighbor has already been processed, skip rendering this segment
+                continue;
+            }
+
+            // Demo render logic
+            segments[direction] = {
+                render: true,
+                width: 1,
+                color: 'black',
+            };
+        }
+
+        cellsToRender.push({
+            coordinate: cell.coordinate,
+            segments,
+        });
+    }
+
+    return {
+        cellsToRender,
+    };
+}
