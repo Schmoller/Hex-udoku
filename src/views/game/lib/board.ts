@@ -1,5 +1,5 @@
 import { useReducer, type ActionDispatch } from 'react';
-import { CellType, type CellState } from './cell';
+import { type CellState } from './cell';
 import { HexCoordinate } from './coordinates';
 import { generateFlowerGridBoard } from './presets/flower-grid';
 

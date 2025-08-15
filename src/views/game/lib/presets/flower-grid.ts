@@ -1,4 +1,4 @@
-import { CellType, type CellState } from '../cell';
+import { type CellState } from '../cell';
 import { AllHexDirections, HexCoordinate } from '../coordinates';
 import type { GenerateResult } from './common';
 
@@ -22,7 +22,6 @@ function generateFlowerGridCells(cells: Map<HexCoordinate, CellState>, center: H
     // Generate the center cell
     cells.set(center, {
         coordinate: center,
-        type: CellType.Editable,
         value: null,
         group,
     });
@@ -31,7 +30,6 @@ function generateFlowerGridCells(cells: Map<HexCoordinate, CellState>, center: H
         const neighborCoord = center.next(direction);
         cells.set(neighborCoord, {
             coordinate: neighborCoord,
-            type: CellType.Editable,
             value: null,
             group,
         });
