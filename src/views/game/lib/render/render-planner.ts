@@ -1,6 +1,10 @@
 import type { GameBoardState, GameMetadata } from '../board';
+import { isCellSameGroup } from '../cell';
 import { AllHexDirections, HexCoordinate, HexDirection } from '../coordinates';
 import { EmptySegmentRenderPattern, type CellRenderState, type CellSegmentStyle } from './cell';
+
+const NormalSegmentWidth = 1;
+const ThickSegmentWidth = 4;
 
 export interface RenderPlan {
     cellsToRender: CellRenderState[];
@@ -33,10 +37,18 @@ export function planRender(meta: GameMetadata, state: GameBoardState): RenderPla
                 continue;
             }
 
+            const neighborCell = state.cells.get(neighborCoord);
+
+            let shouldDisplayThickBorder = false;
+
+            if (!neighborCell || !isCellSameGroup(cell, neighborCell)) {
+                shouldDisplayThickBorder = true;
+            }
+
             // Demo render logic
             segments[direction] = {
                 render: true,
-                width: 1,
+                width: shouldDisplayThickBorder ? ThickSegmentWidth : NormalSegmentWidth,
                 color: 'black',
             };
         }

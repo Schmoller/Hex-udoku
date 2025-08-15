@@ -26,6 +26,7 @@ interface BlankCellState extends BaseCellState {
 interface ClueCellState extends BaseCellState {
     readonly type: CellType.Clue;
     readonly value: number;
+    readonly group: number;
 }
 
 /**
@@ -33,7 +34,16 @@ interface ClueCellState extends BaseCellState {
  */
 interface EditableCellState extends BaseCellState {
     readonly type: CellType.Editable;
+    readonly group: number;
     value: number | null;
 }
 
 export type CellState = ClueCellState | EditableCellState | BlankCellState;
+
+export function isCellSameGroup(a: CellState, b: CellState): boolean {
+    if (a.type === CellType.Blank || b.type === CellType.Blank) {
+        return false;
+    }
+
+    return a.group === b.group;
+}
