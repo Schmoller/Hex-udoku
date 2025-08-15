@@ -60,28 +60,28 @@ export class HexCoordinate {
 }
 
 export const enum HexDirection {
-    QPlus = 0,
-    SPlus = 1,
-    RPlus = 2,
-    QMinus = 3,
-    SMinus = 4,
-    RMinus = 5,
+    Up = 0,
+    UpRight = 1,
+    DownRight = 2,
+    Down = 3,
+    DownLeft = 4,
+    UpLeft = 5,
 }
 
 export const AllHexDirections: HexDirection[] = [
-    HexDirection.QPlus,
-    HexDirection.SPlus,
-    HexDirection.RPlus,
-    HexDirection.QMinus,
-    HexDirection.SMinus,
-    HexDirection.RMinus,
+    HexDirection.Up,
+    HexDirection.UpRight,
+    HexDirection.DownRight,
+    HexDirection.Down,
+    HexDirection.DownLeft,
+    HexDirection.UpLeft,
 ];
 
 const DirectionOffsets: Record<HexDirection, HexCoordinate> = {
-    [HexDirection.QPlus]: HexCoordinate.of(1, 0),
-    [HexDirection.RPlus]: HexCoordinate.of(0, 1),
-    [HexDirection.QMinus]: HexCoordinate.of(-1, 0),
-    [HexDirection.RMinus]: HexCoordinate.of(0, -1),
-    [HexDirection.SPlus]: HexCoordinate.of(1, -1),
-    [HexDirection.SMinus]: HexCoordinate.of(-1, 1),
+    [HexDirection.Up]: HexCoordinate.of(0, -1),
+    [HexDirection.UpRight]: HexCoordinate.of(1, -1),
+    [HexDirection.DownRight]: HexCoordinate.of(1, 0),
+    [HexDirection.Down]: HexCoordinate.of(0, 1),
+    [HexDirection.DownLeft]: HexCoordinate.of(-1, 1),
+    [HexDirection.UpLeft]: HexCoordinate.of(-1, 0),
 };
