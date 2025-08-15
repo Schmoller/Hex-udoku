@@ -1,5 +1,12 @@
+import { GameContainer } from './views/game/GameContainer';
+import { MainLayout } from './layouts/MainLayout';
+
 function App() {
-    return <div>App</div>;
+    return (
+        <MainLayout>
+            <GameContainer />
+        </MainLayout>
+    );
 }
 
 export default App;
