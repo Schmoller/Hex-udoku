@@ -36,7 +36,7 @@ function initialiseGameState(metadata: GameMetadata): GameBoardState {
         const rOffset = Math.floor(q / 2);
         for (let r = -rOffset; r < height - rOffset; r++) {
             const cell: CellState = {
-                coordinate: new HexCoordinate(q, r),
+                coordinate: HexCoordinate.of(q, r),
                 type: CellType.Blank,
             };
 
