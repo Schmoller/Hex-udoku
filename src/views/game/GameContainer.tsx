@@ -1,14 +1,17 @@
-import { useMemo, type FC } from 'react';
+import { useMemo, useState, type FC } from 'react';
 import { type GameMetadata, useGameState } from './lib/board';
 import { GameBoardUI } from './GameBoardUI';
 
 export const GameContainer: FC = () => {
+    const [showDebugInfo, setShowDebugInfo] = useState(false);
+
     const meta = useMemo<GameMetadata>(() => ({ width: 9, height: 9 }), []);
     const [state, dispatch] = useGameState(meta);
 
     return (
         <div>
-            <GameBoardUI meta={meta} state={state} />
+            <GameBoardUI meta={meta} state={state} showDebugInfo={showDebugInfo} />
+            <button onClick={() => setShowDebugInfo(!showDebugInfo)}>Toggle Debug Info</button>
         </div>
     );
 };

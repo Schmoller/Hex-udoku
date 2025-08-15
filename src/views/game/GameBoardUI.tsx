@@ -20,9 +20,11 @@ export interface GameBoardUIProps {
      * This is the size in a flat-top orientation.
      */
     cellSize?: number;
+
+    showDebugInfo?: boolean;
 }
 
-export const GameBoardUI: FC<GameBoardUIProps> = ({ meta, state, cellSize = DefaultSize }) => {
+export const GameBoardUI: FC<GameBoardUIProps> = ({ meta, state, cellSize = DefaultSize, showDebugInfo }) => {
     const canvasRef = useRef<HTMLCanvasElement>(null);
 
     const gridMetrics = useMemo<HexGridMetrics>(
@@ -57,7 +59,9 @@ export const GameBoardUI: FC<GameBoardUIProps> = ({ meta, state, cellSize = Defa
         renderPlan.cellsToRender.forEach((cell) => {
             const { x, y } = hexCoordinateToCanvas(cell.coordinate, gridMetrics);
 
-            drawHexagonDebugInfo(ctx, cell.coordinate, gridMetrics);
+            if (showDebugInfo) {
+                drawHexagonDebugInfo(ctx, cell.coordinate, gridMetrics);
+            }
 
             for (const direction of AllHexDirections) {
                 const segment = cell.segments[direction];
@@ -78,7 +82,7 @@ export const GameBoardUI: FC<GameBoardUIProps> = ({ meta, state, cellSize = Defa
     // Draw the board whenever the state changes
     useEffect(() => {
         drawBoard();
-    }, [state, gridMetrics]);
+    }, [renderPlan, gridMetrics, showDebugInfo]);
 
     return (
         <div className="border-4">
