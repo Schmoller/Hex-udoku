@@ -22,7 +22,7 @@ function generateFlowerGridCells(cells: Map<HexCoordinate, CellState>, center: H
     // Generate the center cell
     cells.set(center, {
         coordinate: center,
-        value: null,
+        value: 1,
         group,
     });
 
@@ -30,7 +30,7 @@ function generateFlowerGridCells(cells: Map<HexCoordinate, CellState>, center: H
         const neighborCoord = center.next(direction);
         cells.set(neighborCoord, {
             coordinate: neighborCoord,
-            value: null,
+            value: direction + 2,
             group,
         });
     }

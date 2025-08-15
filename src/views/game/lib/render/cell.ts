@@ -9,6 +9,7 @@ export interface CellSegmentStyle {
 export interface CellRenderState {
     coordinate: HexCoordinate;
     segments: Record<HexDirection, CellSegmentStyle | null>;
+    contents: string | null;
 }
 
 export const EmptySegmentRenderPattern: Record<HexDirection, CellSegmentStyle | null> = {

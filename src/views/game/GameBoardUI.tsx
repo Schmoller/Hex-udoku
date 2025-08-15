@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, type FC } from 'react';
 import type { GameBoardState, GameMetadata } from './lib/board';
 import {
+    drawHexagonContents,
     drawHexagonDebugInfo,
     drawHexagonSegment,
     hexCoordinateToCanvas,
@@ -75,6 +76,10 @@ export const GameBoardUI: FC<GameBoardUIProps> = ({ meta, state, cellSize = Defa
                 ctx.lineWidth = segment.width;
                 ctx.strokeStyle = segment.color;
                 drawHexagonSegment(ctx, x, y, direction, gridMetrics);
+            }
+
+            if (cell.contents !== null) {
+                drawHexagonContents(ctx, x, y, cell.contents);
             }
         });
     };

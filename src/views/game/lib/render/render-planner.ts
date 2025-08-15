@@ -45,7 +45,6 @@ export function planRender(meta: GameMetadata, state: GameBoardState): RenderPla
                 shouldDisplayThickBorder = true;
             }
 
-            // Demo render logic
             segments[direction] = {
                 render: true,
                 width: shouldDisplayThickBorder ? ThickSegmentWidth : NormalSegmentWidth,
@@ -53,9 +52,15 @@ export function planRender(meta: GameMetadata, state: GameBoardState): RenderPla
             };
         }
 
+        let contents: string | null = null;
+        if (cell.value !== null) {
+            contents = cell.value.toFixed(0);
+        }
+
         cellsToRender.push({
             coordinate: cell.coordinate,
             segments,
+            contents,
         });
     }
 

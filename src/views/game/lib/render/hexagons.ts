@@ -117,3 +117,11 @@ export function drawHexagonDebugInfo(
     ctx.textAlign = 'left';
     ctx.fillText(sText, x - metrics.cellWidth * (3 / 8) + 4, y - metrics.cellHeight / 4 + 8);
 }
+
+export function drawHexagonContents(ctx: CanvasRenderingContext2D, x: number, y: number, contents: string) {
+    ctx.fillStyle = 'black';
+    ctx.font = 'bold 24px monospace';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(contents, x, y);
+}
