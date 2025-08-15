@@ -1,6 +1,7 @@
 import { useReducer, type ActionDispatch } from 'react';
 import { CellType, type CellState } from './cell';
 import { HexCoordinate } from './coordinates';
+import { generateFlowerGridBoard } from './presets/flower-grid';
 
 /**
  * GameMetadata interface represents the metadata of a game board.
@@ -28,25 +29,12 @@ export interface GameBoardState {
 }
 
 function initialiseGameState(metadata: GameMetadata): GameBoardState {
-    const { width, height } = metadata;
+    // const { width, height } = metadata;
 
-    // Initialize the game board with blank cells
-    const cells = new Map<HexCoordinate, CellState>();
-    for (let q = 0; q < width; q++) {
-        const rOffset = Math.floor(q / 2);
-        for (let r = -rOffset; r < height - rOffset; r++) {
-            const cell: CellState = {
-                coordinate: HexCoordinate.of(q, r),
-                type: CellType.Blank,
-            };
+    const generateResult = generateFlowerGridBoard();
 
-            cells.set(cell.coordinate, cell);
-        }
-    }
-
-    // Explicitly return a value matching the GameBoardState type
     return {
-        cells,
+        cells: generateResult.cells,
     } as GameBoardState;
 }
 
