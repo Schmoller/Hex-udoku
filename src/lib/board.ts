@@ -1,6 +1,9 @@
+import { Random } from 'random';
 import { type CellState } from './cell';
 import { HexCoordinate } from './coordinates';
 import { generateFlowerGridBoard } from './presets/flower-grid';
+import { fillBoardWithRandomNumbers } from './generator/fill';
+import { pruneBoard } from './generator/prune';
 
 /**
  * GameMetadata interface represents the metadata of a game board.
@@ -105,8 +108,14 @@ export function initialiseGameState(metadata: GameMetadata): GameBoardState {
 
     const generateResult = generateFlowerGridBoard();
 
-    return {
+    const board: GameBoardState = {
         cells: generateResult.cells,
         isComplete: false,
     };
+
+    const random = new Random();
+    fillBoardWithRandomNumbers(board, random);
+    pruneBoard(board, 15, random);
+
+    return board;
 }
