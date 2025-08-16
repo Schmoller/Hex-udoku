@@ -9,6 +9,10 @@ export class HexCoordinate {
     readonly q: number;
     readonly r: number;
 
+    get s(): number {
+        return -this.q - this.r;
+    }
+
     /**
      * Gets a unique instance of HexCoordinate for the given q and r values.
      *
@@ -20,6 +24,9 @@ export class HexCoordinate {
      * @note There is an implicit limit that q and r must exist within the range of a 16-bit signed integer.
      */
     static of(q: number, r: number): HexCoordinate {
+        q = Math.floor(q);
+        r = Math.floor(r);
+
         const key = ((q & 0xffff) << 16) | (r & 0xffff);
 
         if (this.instances.has(key)) {
@@ -30,6 +37,37 @@ export class HexCoordinate {
         this.instances.set(key, instance);
 
         return instance;
+    }
+
+    /**
+     * Gets a unique instance of HexCoordinate for the given q and r values, rounding the coordinate to the nearest axial coordinate.
+     * @param q The q coordinate as a floating-point number.
+     * @param r The r coordinate as a floating-point number.
+     *
+     * @returns A HexCoordinate instance for the rounded q and r values.
+     * @note This method is useful for handling fractional coordinates that need to be snapped to the nearest hexagonal grid point.
+     */
+    static ofRounded(q: number, r: number): HexCoordinate {
+        const s = -q - r;
+
+        let outputQ = Math.round(q);
+        let outputR = Math.round(r);
+        let outputS = Math.round(s);
+
+        // Maintain q + r + s = 0
+        const diffQ = Math.abs(outputQ - q);
+        const diffR = Math.abs(outputR - r);
+        const diffS = Math.abs(outputS - s);
+
+        if (diffQ > diffR && diffQ > diffS) {
+            outputQ = -outputR - outputS;
+        } else if (diffR > diffS) {
+            outputR = -outputQ - outputS;
+        } else {
+            outputS = -outputQ - outputR;
+        }
+
+        return HexCoordinate.of(outputQ, outputR);
     }
 
     private constructor(q: number, r: number) {
