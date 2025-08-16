@@ -10,6 +10,7 @@ export interface CellRenderState {
     coordinate: HexCoordinate;
     segments: Record<HexDirection, CellSegmentStyle | null>;
     contents: string | null;
+    contentColor: string | null;
     backgroundColor: string | null;
 }
 

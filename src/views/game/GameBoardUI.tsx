@@ -95,6 +95,7 @@ export const GameBoardUI: FC<GameBoardUIProps> = ({
             }
 
             if (cell.contents !== null) {
+                ctx.fillStyle = cell.contentColor ?? 'black';
                 drawHexagonContents(ctx, x, y, cell.contents);
             }
         });

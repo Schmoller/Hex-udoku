@@ -53,8 +53,15 @@ export function planRender(meta: GameMetadata, state: GameBoardState): RenderPla
         }
 
         let contents: string | null = null;
+        let contentColor: string | null = null;
         if (cell.value !== null) {
             contents = cell.value.toFixed(0);
+
+            if (cell.isEditable) {
+                contentColor = 'oklch(39.1% 0.09 240.876)';
+            } else {
+                contentColor = 'black';
+            }
         }
 
         let backgroundColor: string | null = null;
@@ -66,6 +73,7 @@ export function planRender(meta: GameMetadata, state: GameBoardState): RenderPla
             coordinate: cell.coordinate,
             segments,
             contents,
+            contentColor,
             backgroundColor,
         });
     }
