@@ -41,11 +41,15 @@ function initialiseGameState(metadata: GameMetadata): GameBoardState {
 const enum ActionType {
     SelectCell = 'selectCell',
     DeselectAllCells = 'deselectAllCells',
+    EditValue = 'editValue',
+    SetSelectedCellValues = 'setSelectedCellValues',
 }
 
 type GameUpdateAction =
     | { type: ActionType.SelectCell; coordinate: HexCoordinate; multi?: boolean }
-    | { type: ActionType.DeselectAllCells };
+    | { type: ActionType.DeselectAllCells }
+    | { type: ActionType.EditValue; coordinate: HexCoordinate; value: number | null }
+    | { type: ActionType.SetSelectedCellValues; value: number | null };
 
 function gameStateReducer(state: GameBoardState, action: GameUpdateAction): GameBoardState {
     switch (action.type) {
@@ -72,6 +76,23 @@ function gameStateReducer(state: GameBoardState, action: GameUpdateAction): Game
             }
             return { ...state };
         }
+        case ActionType.EditValue: {
+            const { coordinate, value } = action;
+            const cell = state.cells.get(coordinate);
+            if (cell && cell.isEditable) {
+                cell.value = value;
+            }
+            return { ...state };
+        }
+        case ActionType.SetSelectedCellValues: {
+            const { value } = action;
+            for (const cellState of state.cells.values()) {
+                if (cellState.isSelected && cellState.isEditable) {
+                    cellState.value = value;
+                }
+            }
+            return { ...state };
+        }
     }
     return state;
 }
@@ -79,6 +100,8 @@ function gameStateReducer(state: GameBoardState, action: GameUpdateAction): Game
 export interface GameStateUpdater {
     selectCell(coordinate: HexCoordinate, multi?: boolean): void;
     deselectAllCells(): void;
+    editCellValue(coordinate: HexCoordinate, value: number | null): void;
+    setSelectedCellValues(value: number | null): void;
 }
 
 export function useGameState(metadata: GameMetadata): [GameBoardState, GameStateUpdater] {
@@ -95,6 +118,12 @@ export function useGameState(metadata: GameMetadata): [GameBoardState, GameState
             },
             deselectAllCells: () => {
                 dispatch({ type: ActionType.DeselectAllCells });
+            },
+            editCellValue: (coordinate: HexCoordinate, value: number | null) => {
+                dispatch({ type: ActionType.EditValue, coordinate, value });
+            },
+            setSelectedCellValues: (value: number | null) => {
+                dispatch({ type: ActionType.SetSelectedCellValues, value });
             },
         }),
         [dispatch],

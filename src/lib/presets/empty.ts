@@ -13,6 +13,7 @@ export function generateEmptyGridBoard({ width, height }: GameMetadata): Generat
                 group: 0,
                 value: null,
                 isSelected: false,
+                isEditable: true,
             };
 
             cells.set(cell.coordinate, cell);

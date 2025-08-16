@@ -25,15 +25,17 @@ function generateFlowerGridCells(cells: Map<HexCoordinate, CellState>, center: H
         value: 1,
         group,
         isSelected: false,
+        isEditable: false,
     });
 
     for (const direction of AllHexDirections) {
         const neighborCoord = center.next(direction);
         cells.set(neighborCoord, {
             coordinate: neighborCoord,
-            value: direction + 2,
+            value: null,
             group,
             isSelected: false,
+            isEditable: true,
         });
     }
 }

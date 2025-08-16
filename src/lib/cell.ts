@@ -6,6 +6,7 @@ export interface CellState {
     value: number | null;
 
     isSelected: boolean;
+    isEditable: boolean;
 }
 
 export function isCellSameGroup(a: CellState, b: CellState): boolean {

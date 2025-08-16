@@ -126,13 +126,37 @@ export const GameBoardUI: FC<GameBoardUIProps> = ({
         gameUpdater.selectCell(coordinate, event.ctrlKey);
     }, []);
 
+    const handleKeyPress = useCallback((event: React.KeyboardEvent<HTMLCanvasElement>) => {
+        event.preventDefault();
+        switch (event.key) {
+            case 'Escape':
+                gameUpdater.deselectAllCells();
+                break;
+            case '1':
+            case '2':
+            case '3':
+            case '4':
+            case '5':
+            case '6':
+            case '7':
+                gameUpdater.setSelectedCellValues(parseInt(event.key, 10));
+                break;
+            case 'Delete':
+            case 'Backspace':
+                gameUpdater.setSelectedCellValues(null);
+                break;
+        }
+    }, []);
+
     return (
         <div className="border-4">
             <canvas
                 ref={canvasRef}
+                tabIndex={0}
                 width={gridMetrics.horizontalSpacing * (meta.width - 1) + gridMetrics.cellWidth + BoardPadding * 2}
                 height={gridMetrics.verticalSpacing * meta.height + gridMetrics.cellHeight / 2 + BoardPadding * 2}
                 onMouseDown={handleMouseDown}
+                onKeyDown={handleKeyPress}
             />
         </div>
     );
