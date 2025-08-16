@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, type FC } from 'react';
-import type { GameBoardState, GameMetadata, GameStateUpdater } from './lib/board';
+import type { GameBoardState, GameMetadata, GameStateUpdater } from '../../lib/board';
 import {
     canvasToHexCoordinate,
     drawHexagonContents,
@@ -8,9 +8,9 @@ import {
     fillHexagon,
     hexCoordinateToCanvas,
     type HexGridMetrics,
-} from './lib/render/hexagons';
-import { planRender } from './lib/render/render-planner';
-import { AllHexDirections } from './lib/coordinates';
+} from '../../lib/render/hexagons';
+import { planRender } from '../../lib/render/render-planner';
+import { AllHexDirections } from '../../lib/coordinates';
 
 const DefaultSize = 32;
 const BoardPadding = 16;
