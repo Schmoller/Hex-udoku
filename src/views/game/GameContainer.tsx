@@ -6,11 +6,11 @@ export const GameContainer: FC = () => {
     const [showDebugInfo, setShowDebugInfo] = useState(false);
 
     const meta = useMemo<GameMetadata>(() => ({ width: 9, height: 9 }), []);
-    const [state, dispatch] = useGameState(meta);
+    const [state, updater] = useGameState(meta);
 
     return (
         <div>
-            <GameBoardUI meta={meta} state={state} showDebugInfo={showDebugInfo} />
+            <GameBoardUI meta={meta} state={state} showDebugInfo={showDebugInfo} gameUpdater={updater} />
             <button onClick={() => setShowDebugInfo(!showDebugInfo)}>Toggle Debug Info</button>
         </div>
     );

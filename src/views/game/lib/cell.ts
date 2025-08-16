@@ -4,6 +4,8 @@ export interface CellState {
     readonly coordinate: HexCoordinate;
     readonly group: number;
     value: number | null;
+
+    isSelected: boolean;
 }
 
 export function isCellSameGroup(a: CellState, b: CellState): boolean {

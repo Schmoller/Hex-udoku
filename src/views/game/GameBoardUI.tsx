@@ -1,9 +1,11 @@
-import { useEffect, useMemo, useRef, type FC } from 'react';
-import type { GameBoardState, GameMetadata } from './lib/board';
+import { useCallback, useEffect, useMemo, useRef, type FC } from 'react';
+import type { GameBoardState, GameMetadata, GameStateUpdater } from './lib/board';
 import {
+    canvasToHexCoordinate,
     drawHexagonContents,
     drawHexagonDebugInfo,
     drawHexagonSegment,
+    fillHexagon,
     hexCoordinateToCanvas,
     type HexGridMetrics,
 } from './lib/render/hexagons';
@@ -16,6 +18,8 @@ const BoardPadding = 16;
 export interface GameBoardUIProps {
     meta: GameMetadata;
     state: GameBoardState;
+    gameUpdater: GameStateUpdater;
+
     /**
      * Size of a cell in pixels.
      * This is the size in a flat-top orientation.
@@ -25,7 +29,13 @@ export interface GameBoardUIProps {
     showDebugInfo?: boolean;
 }
 
-export const GameBoardUI: FC<GameBoardUIProps> = ({ meta, state, cellSize = DefaultSize, showDebugInfo }) => {
+export const GameBoardUI: FC<GameBoardUIProps> = ({
+    meta,
+    state,
+    gameUpdater,
+    cellSize = DefaultSize,
+    showDebugInfo,
+}) => {
     const canvasRef = useRef<HTMLCanvasElement>(null);
 
     const gridMetrics = useMemo<HexGridMetrics>(
@@ -61,6 +71,11 @@ export const GameBoardUI: FC<GameBoardUIProps> = ({ meta, state, cellSize = Defa
         renderPlan.cellsToRender.forEach((cell) => {
             const { x, y } = hexCoordinateToCanvas(cell.coordinate, gridMetrics);
 
+            if (cell.backgroundColor) {
+                ctx.fillStyle = cell.backgroundColor;
+                fillHexagon(ctx, x, y, gridMetrics);
+            }
+
             if (showDebugInfo) {
                 drawHexagonDebugInfo(ctx, cell.coordinate, gridMetrics);
             }
@@ -90,12 +105,34 @@ export const GameBoardUI: FC<GameBoardUIProps> = ({ meta, state, cellSize = Defa
         drawBoard();
     }, [renderPlan, gridMetrics, showDebugInfo]);
 
+    const handleMouseDown = useCallback((event: React.MouseEvent<HTMLCanvasElement>) => {
+        const canvas = canvasRef.current;
+        if (!canvas) {
+            return;
+        }
+
+        const rect = canvas.getBoundingClientRect();
+        const x = event.clientX - rect.left - BoardPadding;
+        const y = event.clientY - rect.top - BoardPadding;
+
+        const coordinate = canvasToHexCoordinate(x, y, gridMetrics);
+
+        const cell = state.cells.get(coordinate);
+        if (!cell) {
+            // TODO: Deselect all cells
+            return;
+        }
+
+        gameUpdater.selectCell(coordinate, event.ctrlKey);
+    }, []);
+
     return (
         <div className="border-4">
             <canvas
                 ref={canvasRef}
                 width={gridMetrics.horizontalSpacing * (meta.width - 1) + gridMetrics.cellWidth + BoardPadding * 2}
                 height={gridMetrics.verticalSpacing * meta.height + gridMetrics.cellHeight / 2 + BoardPadding * 2}
+                onMouseDown={handleMouseDown}
             />
         </div>
     );

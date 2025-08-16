@@ -1,4 +1,4 @@
-import { useReducer, type ActionDispatch } from 'react';
+import { useMemo, useReducer } from 'react';
 import { type CellState } from './cell';
 import { HexCoordinate } from './coordinates';
 import { generateFlowerGridBoard } from './presets/flower-grid';
@@ -38,15 +38,54 @@ function initialiseGameState(metadata: GameMetadata): GameBoardState {
     } as GameBoardState;
 }
 
-type GameUpdateAction = never;
+const enum ActionType {
+    SelectCell = 'selectCell',
+}
 
-export function useGameState(metadata: GameMetadata): [GameBoardState, ActionDispatch<GameUpdateAction>] {
-    return useReducer<GameBoardState, GameMetadata, GameUpdateAction>(
-        (state, action) => {
-            // Handle game state updates here
-            return state;
-        },
+type GameUpdateAction = { type: ActionType.SelectCell; coordinate: HexCoordinate; multi?: boolean };
+
+function gameStateReducer(state: GameBoardState, action: GameUpdateAction): GameBoardState {
+    switch (action.type) {
+        case ActionType.SelectCell: {
+            const { coordinate, multi } = action;
+            const cell = state.cells.get(coordinate);
+
+            if (cell) {
+                if (!multi) {
+                    // Deselect all cells first
+                    for (const cellState of state.cells.values()) {
+                        cellState.isSelected = false;
+                    }
+                }
+
+                cell.isSelected = true;
+            }
+
+            return { ...state };
+        }
+    }
+    return state;
+}
+
+export interface GameStateUpdater {
+    selectCell(coordinate: HexCoordinate, multi?: boolean): void;
+}
+
+export function useGameState(metadata: GameMetadata): [GameBoardState, GameStateUpdater] {
+    const [state, dispatch] = useReducer<GameBoardState, GameMetadata, [GameUpdateAction]>(
+        gameStateReducer,
         metadata,
         initialiseGameState,
     );
+
+    const gameStateUpdater = useMemo<GameStateUpdater>(
+        () => ({
+            selectCell: (coordinate: HexCoordinate, multi = false) => {
+                dispatch({ type: ActionType.SelectCell, coordinate, multi });
+            },
+        }),
+        [dispatch],
+    );
+
+    return [state, gameStateUpdater];
 }

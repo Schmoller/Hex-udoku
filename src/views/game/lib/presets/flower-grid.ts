@@ -24,6 +24,7 @@ function generateFlowerGridCells(cells: Map<HexCoordinate, CellState>, center: H
         coordinate: center,
         value: 1,
         group,
+        isSelected: false,
     });
 
     for (const direction of AllHexDirections) {
@@ -32,6 +33,7 @@ function generateFlowerGridCells(cells: Map<HexCoordinate, CellState>, center: H
             coordinate: neighborCoord,
             value: direction + 2,
             group,
+            isSelected: false,
         });
     }
 }

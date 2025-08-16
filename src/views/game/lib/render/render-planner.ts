@@ -57,10 +57,16 @@ export function planRender(meta: GameMetadata, state: GameBoardState): RenderPla
             contents = cell.value.toFixed(0);
         }
 
+        let backgroundColor: string | null = null;
+        if (cell.isSelected) {
+            backgroundColor = 'oklch(88.2% 0.059 254.128)';
+        }
+
         cellsToRender.push({
             coordinate: cell.coordinate,
             segments,
             contents,
+            backgroundColor,
         });
     }
 

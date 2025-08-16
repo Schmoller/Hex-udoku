@@ -95,6 +95,29 @@ export function drawHexagonSegment(
 }
 
 /**
+ * Fills a hexagon on the canvas with the specified metrics.
+ * This function draws a filled hexagon centered at (x, y).
+ *
+ * The colour of the hexagon can be set by changing the fillStyle of the context before calling this function.
+ *
+ * @param ctx The canvas rendering context to draw on.
+ * @param x The center x-coordinate of the hexagon.
+ * @param y The center y-coordinate of the hexagon.
+ * @param metrics The rendering state containing cell dimensions.
+ */
+export function fillHexagon(ctx: CanvasRenderingContext2D, x: number, y: number, metrics: HexGridMetrics) {
+    ctx.beginPath();
+    ctx.moveTo(x + metrics.cellWidth / 2, y);
+    ctx.lineTo(x + metrics.cellWidth / 4, y - metrics.cellHeight / 2);
+    ctx.lineTo(x - metrics.cellWidth / 4, y - metrics.cellHeight / 2);
+    ctx.lineTo(x - metrics.cellWidth / 2, y);
+    ctx.lineTo(x - metrics.cellWidth / 4, y + metrics.cellHeight / 2);
+    ctx.lineTo(x + metrics.cellWidth / 4, y + metrics.cellHeight / 2);
+    ctx.closePath();
+    ctx.fill();
+}
+
+/**
  * Draws debug information for a hexagon cell on the canvas.
  * This includes the q and r coordinates of the hexagon.
  *

@@ -12,6 +12,7 @@ export function generateEmptyGridBoard({ width, height }: GameMetadata): Generat
                 coordinate: HexCoordinate.of(q, r),
                 group: 0,
                 value: null,
+                isSelected: false,
             };
 
             cells.set(cell.coordinate, cell);
