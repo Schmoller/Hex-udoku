@@ -22,10 +22,10 @@ function generateFlowerGridCells(cells: Map<HexCoordinate, CellState>, center: H
     // Generate the center cell
     cells.set(center, {
         coordinate: center,
-        value: 1,
+        value: null,
         group,
         isSelected: false,
-        isEditable: false,
+        isEditable: true,
         isValid: true,
     });
 

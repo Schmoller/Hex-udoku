@@ -1,5 +1,6 @@
 import { useMemo, useState, type FC } from 'react';
-import { type GameMetadata, useGameState } from '../../lib/board';
+import { type GameMetadata } from '../../lib/board';
+import { useGameState } from '../../lib/state-reducer';
 import { GameBoardUI } from './GameBoardUI';
 
 export const GameContainer: FC = () => {

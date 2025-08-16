@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, type FC } from 'react';
-import type { GameBoardState, GameMetadata, GameStateUpdater } from '../../lib/board';
+import type { GameBoardState, GameMetadata } from '../../lib/board';
+import type { GameStateUpdater } from '../../lib/state-reducer';
 import {
     canvasToHexCoordinate,
     drawHexagonContents,
