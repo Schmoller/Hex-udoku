@@ -1,10 +1,11 @@
-import type { HexCoordinate, HexDirection } from '../coordinates';
+import { HexCoordinate, type HexDirection } from '../coordinates';
 
 /**
  * HexGridMetrics interface defines the metrics for rendering hexagonal grids.
  * This stores the dimensions of a hexagon and the spacing between them.
  */
 export interface HexGridMetrics {
+    innerSize: number;
     cellWidth: number;
     cellHeight: number;
     horizontalSpacing: number;
@@ -25,6 +26,25 @@ export function hexCoordinateToCanvas(coordinate: HexCoordinate, metrics: HexGri
     const y = (coordinate.r + coordinate.q / 2) * metrics.verticalSpacing + metrics.cellHeight / 2;
 
     return { x, y };
+}
+
+/**
+ * Converts canvas coordinates to a hexagonal coordinate.
+ * This function assumes a flat-top hexagon orientation.
+ *
+ * @param x The x-coordinate in canvas space.
+ * @param y The y-coordinate in canvas space.
+ * @param metrics The precalculated metrics for the hexagonal grid.
+ * @returns The hexagonal coordinate corresponding to the canvas coordinates.
+ */
+export function canvasToHexCoordinate(x: number, y: number, metrics: HexGridMetrics): HexCoordinate {
+    const scaledX = (x - metrics.cellWidth / 2) / metrics.innerSize;
+    const scaledY = (y - metrics.cellHeight / 2) / metrics.innerSize;
+
+    const q = (2 / 3) * scaledX;
+    const r = (-1 / 3) * scaledX + (Math.sqrt(3) / 3) * scaledY;
+
+    return HexCoordinate.ofRounded(q, r);
 }
 
 /**

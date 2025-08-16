@@ -30,6 +30,7 @@ export const GameBoardUI: FC<GameBoardUIProps> = ({ meta, state, cellSize = Defa
 
     const gridMetrics = useMemo<HexGridMetrics>(
         () => ({
+            innerSize: cellSize,
             cellWidth: cellSize * 2,
             cellHeight: Math.sqrt(3) * cellSize,
             horizontalSpacing: cellSize * 1.5,
