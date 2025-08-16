@@ -1,7 +1,8 @@
-import { useMemo, useState, type FC } from 'react';
+import { useCallback, useMemo, useState, type FC } from 'react';
 import { type GameMetadata } from '../../lib/board';
 import { useGameState } from '../../lib/state-reducer';
 import { GameBoardUI } from './GameBoardUI';
+import { ControlPad } from './control-pad/ControlPad';
 
 export const GameContainer: FC = () => {
     const [showDebugInfo, setShowDebugInfo] = useState(false);
@@ -9,13 +10,23 @@ export const GameContainer: FC = () => {
     const meta = useMemo<GameMetadata>(() => ({ width: 9, height: 9 }), []);
     const [state, updater] = useGameState(meta);
 
+    const handleDigitSelect = useCallback(
+        (digit: number) => {
+            updater.setSelectedCellValues(digit);
+        },
+        [updater],
+    );
+
     return (
-        <div>
+        <div className="flex flex-col items-stretch gap-2">
             <GameBoardUI meta={meta} state={state} showDebugInfo={showDebugInfo} gameUpdater={updater} />
             <button className="btn" onClick={() => setShowDebugInfo(!showDebugInfo)}>
                 Toggle Debug Info
             </button>
             <div>Status: {state.isComplete ? 'Complete' : 'Incomplete'}</div>
+            <div>
+                <ControlPad digits={7} onDigitSelect={handleDigitSelect} />
+            </div>
         </div>
     );
 };
