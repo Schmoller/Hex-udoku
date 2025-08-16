@@ -12,7 +12,9 @@ export const GameContainer: FC = () => {
     return (
         <div>
             <GameBoardUI meta={meta} state={state} showDebugInfo={showDebugInfo} gameUpdater={updater} />
-            <button onClick={() => setShowDebugInfo(!showDebugInfo)}>Toggle Debug Info</button>
+            <button className="btn" onClick={() => setShowDebugInfo(!showDebugInfo)}>
+                Toggle Debug Info
+            </button>
             <div>Status: {state.isComplete ? 'Complete' : 'Incomplete'}</div>
         </div>
     );
