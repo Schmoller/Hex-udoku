@@ -40,9 +40,12 @@ function initialiseGameState(metadata: GameMetadata): GameBoardState {
 
 const enum ActionType {
     SelectCell = 'selectCell',
+    DeselectAllCells = 'deselectAllCells',
 }
 
-type GameUpdateAction = { type: ActionType.SelectCell; coordinate: HexCoordinate; multi?: boolean };
+type GameUpdateAction =
+    | { type: ActionType.SelectCell; coordinate: HexCoordinate; multi?: boolean }
+    | { type: ActionType.DeselectAllCells };
 
 function gameStateReducer(state: GameBoardState, action: GameUpdateAction): GameBoardState {
     switch (action.type) {
@@ -63,12 +66,19 @@ function gameStateReducer(state: GameBoardState, action: GameUpdateAction): Game
 
             return { ...state };
         }
+        case ActionType.DeselectAllCells: {
+            for (const cellState of state.cells.values()) {
+                cellState.isSelected = false;
+            }
+            return { ...state };
+        }
     }
     return state;
 }
 
 export interface GameStateUpdater {
     selectCell(coordinate: HexCoordinate, multi?: boolean): void;
+    deselectAllCells(): void;
 }
 
 export function useGameState(metadata: GameMetadata): [GameBoardState, GameStateUpdater] {
@@ -82,6 +92,9 @@ export function useGameState(metadata: GameMetadata): [GameBoardState, GameState
         () => ({
             selectCell: (coordinate: HexCoordinate, multi = false) => {
                 dispatch({ type: ActionType.SelectCell, coordinate, multi });
+            },
+            deselectAllCells: () => {
+                dispatch({ type: ActionType.DeselectAllCells });
             },
         }),
         [dispatch],

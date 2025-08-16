@@ -119,7 +119,7 @@ export const GameBoardUI: FC<GameBoardUIProps> = ({
 
         const cell = state.cells.get(coordinate);
         if (!cell) {
-            // TODO: Deselect all cells
+            gameUpdater.deselectAllCells();
             return;
         }
 
