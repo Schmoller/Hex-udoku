@@ -57,7 +57,9 @@ export function planRender(meta: GameMetadata, state: GameBoardState): RenderPla
         if (cell.value !== null) {
             contents = cell.value.toFixed(0);
 
-            if (cell.isEditable) {
+            if (!cell.isValid) {
+                contentColor = 'oklch(57.7% 0.245 27.325)';
+            } else if (cell.isEditable) {
                 contentColor = 'oklch(39.1% 0.09 240.876)';
             } else {
                 contentColor = 'black';

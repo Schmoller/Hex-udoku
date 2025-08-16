@@ -14,6 +14,7 @@ export function generateEmptyGridBoard({ width, height }: GameMetadata): Generat
                 value: null,
                 isSelected: false,
                 isEditable: true,
+                isValid: true,
             };
 
             cells.set(cell.coordinate, cell);

@@ -2,6 +2,7 @@ import { useMemo, useReducer } from 'react';
 import { type CellState } from './cell';
 import { HexCoordinate } from './coordinates';
 import { generateFlowerGridBoard } from './presets/flower-grid';
+import { updateBoardValidity } from './validity';
 
 /**
  * GameMetadata interface represents the metadata of a game board.
@@ -26,6 +27,79 @@ export interface GameBoardState {
      * * @see GameMetadata for the metadata of the game board.
      */
     readonly cells: Map<HexCoordinate, CellState>;
+
+    /**
+     * Holds the status of whether the whole board is complete and valid.
+     */
+    readonly isComplete: boolean;
+}
+
+export const enum UnitType {
+    /**
+     * Group units contain all cells with the same group number.
+     * This is equivalent to the box in Sudoku.
+     */
+    Group,
+    /**
+     * All cells which share the same Q value
+     */
+    QRank,
+    /**
+     * All cells which share the same R value
+     */
+    RRank,
+    /**
+     * All cells which share the same S value
+     */
+    SRank,
+}
+
+export const AllUnitTypes = [UnitType.Group, UnitType.QRank, UnitType.RRank, UnitType.SRank];
+
+/**
+ * Retrieves all the cells that are contained within specified unit.
+ * A unit is a collection of cells which are all related by the unit type.
+ *
+ * @param board The game board
+ * @param start The starting coordinate to use as a reference point
+ * @param unitType What kind of unit to retrieve
+ */
+export function getUnit(board: GameBoardState, start: HexCoordinate, unitType: UnitType): CellState[] {
+    const unit: CellState[] = [];
+
+    const startingCell = board.cells.get(start);
+    if (!startingCell) {
+        throw new Error('Expected starting coordinate to be in the grid');
+    }
+
+    for (const cell of board.cells.values()) {
+        if (cell === startingCell) {
+            unit.push(cell);
+            continue;
+        }
+
+        let sameUnit = false;
+        switch (unitType) {
+            case UnitType.Group:
+                sameUnit = cell.group === startingCell.group;
+                break;
+            case UnitType.QRank:
+                sameUnit = cell.coordinate.q === start.q;
+                break;
+            case UnitType.RRank:
+                sameUnit = cell.coordinate.r === start.r;
+                break;
+            case UnitType.SRank:
+                sameUnit = cell.coordinate.s === start.s;
+                break;
+        }
+
+        if (sameUnit) {
+            unit.push(cell);
+        }
+    }
+
+    return unit;
 }
 
 function initialiseGameState(metadata: GameMetadata): GameBoardState {
@@ -35,7 +109,8 @@ function initialiseGameState(metadata: GameMetadata): GameBoardState {
 
     return {
         cells: generateResult.cells,
-    } as GameBoardState;
+        isComplete: false,
+    };
 }
 
 const enum ActionType {
@@ -82,7 +157,10 @@ function gameStateReducer(state: GameBoardState, action: GameUpdateAction): Game
             if (cell && cell.isEditable) {
                 cell.value = value;
             }
-            return { ...state };
+
+            let board = { ...state };
+            board = updateBoardValidity(board);
+            return board;
         }
         case ActionType.SetSelectedCellValues: {
             const { value } = action;
@@ -91,7 +169,10 @@ function gameStateReducer(state: GameBoardState, action: GameUpdateAction): Game
                     cellState.value = value;
                 }
             }
-            return { ...state };
+
+            let board = { ...state };
+            board = updateBoardValidity(board);
+            return board;
         }
     }
     return state;
