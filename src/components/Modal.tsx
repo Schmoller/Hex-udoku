@@ -19,9 +19,11 @@ export interface ModalProps {
     open?: boolean;
     actions: ModalAction[];
     children: ReactNode;
+
+    onClose?: () => void;
 }
 
-export const Modal: FC<ModalProps> = ({ actions, open, children }) => {
+export const Modal: FC<ModalProps> = ({ actions, open, onClose, children }) => {
     const dialogRef = useRef<HTMLDialogElement>(null);
 
     useEffect(() => {
@@ -35,6 +37,18 @@ export const Modal: FC<ModalProps> = ({ actions, open, children }) => {
             dialogRef.current.close();
         }
     }, [open]);
+
+    // Add a handler to detect dialog close
+    useEffect(() => {
+        if (!onClose) {
+            return;
+        }
+
+        dialogRef.current?.addEventListener('close', onClose);
+        return () => {
+            dialogRef.current?.removeEventListener('close', onClose);
+        };
+    }, [onClose]);
 
     return (
         <dialog ref={dialogRef} className="modal">

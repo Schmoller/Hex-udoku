@@ -50,6 +50,7 @@ export const GameContainer: FC = () => {
                     digitMode={digitMode}
                     onUpdateDigitMode={setDigitMode}
                     onClearSelected={handleClearSelected}
+                    onRestart={handleNewGame}
                 />
             </div>
             <GameCompleteModal open={state.isComplete} onNewGameClick={handleNewGame} />
