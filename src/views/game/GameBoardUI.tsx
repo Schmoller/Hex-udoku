@@ -36,6 +36,8 @@ export interface GameBoardUIProps {
     cellSize?: number;
 
     showDebugInfo?: boolean;
+
+    onDigitSelect: (digit: number) => void;
 }
 
 export const GameBoardUI: FC<GameBoardUIProps> = ({
@@ -44,6 +46,7 @@ export const GameBoardUI: FC<GameBoardUIProps> = ({
     gameUpdater,
     cellSize = DefaultSize,
     showDebugInfo,
+    onDigitSelect,
 }) => {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const lastMoveCoord = useRef<HexCoordinate | null>(null);
@@ -222,27 +225,30 @@ export const GameBoardUI: FC<GameBoardUIProps> = ({
         selectionMode.current = SelectionMode.None;
     }, []);
 
-    const handleKeyPress = useCallback((event: React.KeyboardEvent<HTMLCanvasElement>) => {
-        event.preventDefault();
-        switch (event.key) {
-            case 'Escape':
-                gameUpdater.deselectAllCells();
-                break;
-            case '1':
-            case '2':
-            case '3':
-            case '4':
-            case '5':
-            case '6':
-            case '7':
-                gameUpdater.toggleSelectedCellValues(parseInt(event.key, 10));
-                break;
-            case 'Delete':
-            case 'Backspace':
-                gameUpdater.toggleSelectedCellValues(null);
-                break;
-        }
-    }, []);
+    const handleKeyPress = useCallback(
+        (event: React.KeyboardEvent<HTMLCanvasElement>) => {
+            event.preventDefault();
+            switch (event.key) {
+                case 'Escape':
+                    gameUpdater.deselectAllCells();
+                    break;
+                case '1':
+                case '2':
+                case '3':
+                case '4':
+                case '5':
+                case '6':
+                case '7':
+                    onDigitSelect(parseInt(event.key, 10));
+                    break;
+                case 'Delete':
+                case 'Backspace':
+                    gameUpdater.toggleSelectedCellValues(null);
+                    break;
+            }
+        },
+        [onDigitSelect],
+    );
 
     return (
         <div className="border-4">

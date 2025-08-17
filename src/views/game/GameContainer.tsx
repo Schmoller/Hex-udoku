@@ -27,7 +27,13 @@ export const GameContainer: FC = () => {
 
     return (
         <div className="flex flex-col items-stretch gap-2">
-            <GameBoardUI meta={meta} state={state} showDebugInfo={showDebugInfo} gameUpdater={updater} />
+            <GameBoardUI
+                meta={meta}
+                state={state}
+                showDebugInfo={showDebugInfo}
+                gameUpdater={updater}
+                onDigitSelect={handleDigitSelect}
+            />
             <button className="btn" onClick={() => setShowDebugInfo(!showDebugInfo)}>
                 Toggle Debug Info
             </button>
