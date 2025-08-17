@@ -6,6 +6,7 @@ export interface CellState {
     value: number | null;
 
     centerNotes: Set<number>;
+    outerNotes: Set<number>;
 
     isSelected: boolean;
     isEditable: boolean;
@@ -18,6 +19,7 @@ export function newCellState(coordinate: HexCoordinate, group = 0): CellState {
         group,
         value: null,
         centerNotes: new Set<number>(),
+        outerNotes: new Set<number>(),
         isSelected: false,
         isEditable: false,
         isValid: true,
@@ -28,6 +30,7 @@ export function cloneCellState(state: CellState): CellState {
     return {
         ...state,
         centerNotes: new Set(state.centerNotes),
+        outerNotes: new Set(state.outerNotes),
     };
 }
 

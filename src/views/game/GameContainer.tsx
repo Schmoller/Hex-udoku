@@ -18,6 +18,8 @@ export const GameContainer: FC = () => {
                 updater.setSelectedCellValues(digit);
             } else if (digitMode === DigitMode.CenterNote) {
                 updater.toggleSelectedCellCenterNote(digit);
+            } else if (digitMode === DigitMode.OuterNote) {
+                updater.toggleSelectedCellOuterNote(digit);
             }
         },
         [updater, digitMode],

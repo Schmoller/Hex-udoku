@@ -9,6 +9,7 @@ const enum ActionType {
     EditValue = 'editValue',
     SetSelectedCellValues = 'setSelectedCellValues',
     ToggleSelectedCellCenterNote = 'toggleSelectedCellCenterNote',
+    ToggleSelectedCellOuterNote = 'toggleSelectedCellOuterNote',
 }
 
 type GameUpdateAction =
@@ -16,7 +17,8 @@ type GameUpdateAction =
     | { type: ActionType.DeselectAllCells }
     | { type: ActionType.EditValue; coordinate: HexCoordinate; value: number | null }
     | { type: ActionType.SetSelectedCellValues; value: number | null }
-    | { type: ActionType.ToggleSelectedCellCenterNote; value: number };
+    | { type: ActionType.ToggleSelectedCellCenterNote; value: number }
+    | { type: ActionType.ToggleSelectedCellOuterNote; value: number };
 
 function gameStateReducer(state: GameBoardState, action: GameUpdateAction): GameBoardState {
     switch (action.type) {
@@ -96,6 +98,36 @@ function gameStateReducer(state: GameBoardState, action: GameUpdateAction): Game
 
             return state;
         }
+        case ActionType.ToggleSelectedCellOuterNote: {
+            const { value } = action;
+
+            state = cloneGameState(state);
+
+            let areAllSet = true;
+            for (const cellState of state.cells.values()) {
+                if (!cellState.isSelected || !cellState.isEditable) {
+                    continue;
+                }
+
+                if (!cellState.outerNotes.has(value)) {
+                    areAllSet = false;
+                    cellState.outerNotes.add(value);
+                }
+            }
+
+            if (areAllSet) {
+                // In this case, we want to unset the value
+                for (const cellState of state.cells.values()) {
+                    if (!cellState.isSelected || !cellState.isEditable) {
+                        continue;
+                    }
+
+                    cellState.outerNotes.delete(value);
+                }
+            }
+
+            return state;
+        }
     }
     return state;
 }
@@ -106,6 +138,7 @@ export interface GameStateUpdater {
     editCellValue(coordinate: HexCoordinate, value: number | null): void;
     setSelectedCellValues(value: number | null): void;
     toggleSelectedCellCenterNote(value: number): void;
+    toggleSelectedCellOuterNote(value: number): void;
 }
 
 export function useGameState(metadata: GameMetadata): [GameBoardState, GameStateUpdater] {
@@ -131,6 +164,9 @@ export function useGameState(metadata: GameMetadata): [GameBoardState, GameState
             },
             toggleSelectedCellCenterNote: (value: number) => {
                 dispatch({ type: ActionType.ToggleSelectedCellCenterNote, value });
+            },
+            toggleSelectedCellOuterNote: (value: number) => {
+                dispatch({ type: ActionType.ToggleSelectedCellOuterNote, value });
             },
         }),
         [dispatch],

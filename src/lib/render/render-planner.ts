@@ -79,6 +79,13 @@ export function planRender(meta: GameMetadata, state: GameBoardState): RenderPla
                 .join('');
         }
 
+        let outerMarkings: string[] = [];
+        if (cell.outerNotes.size > 0 && cell.value === null) {
+            outerMarkings = Array.from(cell.outerNotes.values())
+                .sort()
+                .map((value) => value.toFixed(0));
+        }
+
         cellsToRender.push({
             coordinate: cell.coordinate,
             segments,
@@ -86,6 +93,7 @@ export function planRender(meta: GameMetadata, state: GameBoardState): RenderPla
             contentColor,
             backgroundColor,
             centerMarkings,
+            outerMarkings,
         });
     }
 

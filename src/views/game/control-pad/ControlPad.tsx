@@ -25,6 +25,12 @@ export const ControlPad: FC<ControlPadProps> = ({ digitMode, onUpdateDigitMode, 
                 >
                     Center
                 </button>
+                <button
+                    className={classNames('btn', { 'btn-active': digitMode === DigitMode.OuterNote })}
+                    onClick={() => onUpdateDigitMode(DigitMode.OuterNote)}
+                >
+                    Outer
+                </button>
             </div>
         </div>
     );

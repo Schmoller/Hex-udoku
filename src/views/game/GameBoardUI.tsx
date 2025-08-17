@@ -16,6 +16,7 @@ import { AllHexDirections } from '../../lib/coordinates';
 const DefaultSize = 32;
 const BoardPadding = 16;
 
+const OuterNoteArc = (30 * Math.PI) / 180;
 export interface GameBoardUIProps {
     meta: GameMetadata;
     state: GameBoardState;
@@ -106,6 +107,23 @@ export const GameBoardUI: FC<GameBoardUIProps> = ({
                 ctx.textBaseline = 'middle';
                 ctx.font = '11px Arial';
                 ctx.fillText(cell.centerMarkings, x, y);
+            }
+
+            if (cell.outerMarkings.length > 0) {
+                ctx.fillStyle = 'oklch(69.6% 0.17 162.48)';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.font = '11px Arial';
+
+                let startAngle = -((cell.outerMarkings.length - 1) / 2) * OuterNoteArc;
+                for (const mark of cell.outerMarkings) {
+                    let arcX = Math.sin(startAngle) * (gridMetrics.innerSize * 0.6);
+                    let arcY = -Math.cos(startAngle) * (gridMetrics.innerSize * 0.6);
+
+                    ctx.fillText(mark, x + arcX, y + arcY);
+
+                    startAngle += OuterNoteArc;
+                }
             }
         });
     };
