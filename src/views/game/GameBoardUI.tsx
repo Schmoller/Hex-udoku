@@ -243,7 +243,7 @@ export const GameBoardUI: FC<GameBoardUIProps> = ({
                     break;
                 case 'Delete':
                 case 'Backspace':
-                    gameUpdater.toggleSelectedCellValues(null);
+                    gameUpdater.clearSelectedCells();
                     break;
             }
         },

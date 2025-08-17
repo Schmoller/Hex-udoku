@@ -8,6 +8,7 @@ const enum ActionType {
     SetCellSelection = 'setCellSelection',
     DeselectAllCells = 'deselectAllCells',
     EditValue = 'editValue',
+    ClearSelectedCells = 'clearSelectedCell',
     ToggleSelectedCellValues = 'toggleSelectedCellValues',
     ToggleSelectedCellCenterNote = 'toggleSelectedCellCenterNote',
     ToggleSelectedCellOuterNote = 'toggleSelectedCellOuterNote',
@@ -18,6 +19,7 @@ type GameUpdateAction =
     | { type: ActionType.SetCellSelection; coordinate: HexCoordinate; selected: boolean }
     | { type: ActionType.DeselectAllCells }
     | { type: ActionType.EditValue; coordinate: HexCoordinate; value: number | null }
+    | { type: ActionType.ClearSelectedCells; full?: boolean }
     | { type: ActionType.ToggleSelectedCellValues; value: number | null }
     | { type: ActionType.ToggleSelectedCellCenterNote; value: number }
     | { type: ActionType.ToggleSelectedCellOuterNote; value: number };
@@ -160,6 +162,33 @@ function gameStateReducer(state: GameBoardState, action: GameUpdateAction): Game
 
             return state;
         }
+        case ActionType.ClearSelectedCells: {
+            const { full } = action;
+
+            state = cloneGameState(state);
+
+            for (const cellState of state.cells.values()) {
+                if (!cellState.isSelected || !cellState.isEditable) {
+                    continue;
+                }
+
+                let didClear = false;
+                // First: clear the value
+                if (cellState.value != null) {
+                    didClear = true;
+                    cellState.value = null;
+                }
+
+                // Second: clear notes if any
+                if ((!didClear || full) && (cellState.centerNotes.size > 0 || cellState.outerNotes.size > 0)) {
+                    cellState.centerNotes.clear();
+                    cellState.outerNotes.clear();
+                }
+            }
+
+            state = updateBoardValidity(state);
+            return state;
+        }
     }
     return state;
 }
@@ -169,6 +198,7 @@ export interface GameStateUpdater {
     setCellSelection(coordinate: HexCoordinate, selected: boolean): void;
     deselectAllCells(): void;
     editCellValue(coordinate: HexCoordinate, value: number | null): void;
+    clearSelectedCells(force?: boolean): void;
     toggleSelectedCellValues(value: number | null): void;
     toggleSelectedCellCenterNote(value: number): void;
     toggleSelectedCellOuterNote(value: number): void;
@@ -194,6 +224,9 @@ export function useGameState(metadata: GameMetadata): [GameBoardState, GameState
             },
             editCellValue: (coordinate: HexCoordinate, value: number | null) => {
                 dispatch({ type: ActionType.EditValue, coordinate, value });
+            },
+            clearSelectedCells: (force?: boolean) => {
+                dispatch({ type: ActionType.ClearSelectedCells, full: force });
             },
             toggleSelectedCellValues: (value: number | null) => {
                 dispatch({ type: ActionType.ToggleSelectedCellValues, value });
