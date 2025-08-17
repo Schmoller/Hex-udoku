@@ -1,4 +1,4 @@
-import { type CellState } from '../cell';
+import { newCellState, type CellState } from '../cell';
 import { AllHexDirections, HexCoordinate } from '../coordinates';
 import type { GenerateResult } from './common';
 
@@ -20,24 +20,10 @@ export function generateFlowerGridBoard(): GenerateResult {
 
 function generateFlowerGridCells(cells: Map<HexCoordinate, CellState>, center: HexCoordinate, group: number): void {
     // Generate the center cell
-    cells.set(center, {
-        coordinate: center,
-        value: null,
-        group,
-        isSelected: false,
-        isEditable: true,
-        isValid: true,
-    });
+    cells.set(center, newCellState(center, group));
 
     for (const direction of AllHexDirections) {
         const neighborCoord = center.next(direction);
-        cells.set(neighborCoord, {
-            coordinate: neighborCoord,
-            value: null,
-            group,
-            isSelected: false,
-            isEditable: true,
-            isValid: true,
-        });
+        cells.set(neighborCoord, newCellState(neighborCoord, group));
     }
 }

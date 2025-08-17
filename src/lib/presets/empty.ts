@@ -1,5 +1,5 @@
 import type { GameMetadata } from '../board';
-import { type CellState } from '../cell';
+import { newCellState, type CellState } from '../cell';
 import { HexCoordinate } from '../coordinates';
 import type { GenerateResult } from './common';
 
@@ -8,14 +8,7 @@ export function generateEmptyGridBoard({ width, height }: GameMetadata): Generat
     for (let q = 0; q < width; q++) {
         const rOffset = Math.floor(q / 2);
         for (let r = -rOffset; r < height - rOffset; r++) {
-            const cell: CellState = {
-                coordinate: HexCoordinate.of(q, r),
-                group: 0,
-                value: null,
-                isSelected: false,
-                isEditable: true,
-                isValid: true,
-            };
+            const cell: CellState = newCellState(HexCoordinate.of(q, r));
 
             cells.set(cell.coordinate, cell);
         }
