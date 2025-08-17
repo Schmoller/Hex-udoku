@@ -1,37 +1,14 @@
 import { type FC } from 'react';
 import { NumberPad, type NumberPadProps } from './NumberPad';
-import { DigitMode } from '../common';
-import classNames from 'classnames';
+import { ModeSelectPad, type ModeSelectPadProps } from './ModeSelectPad';
 
-interface ControlPadProps extends NumberPadProps {
-    digitMode: DigitMode;
-    onUpdateDigitMode: (mode: DigitMode) => void;
-}
+interface ControlPadProps extends NumberPadProps, ModeSelectPadProps {}
 
 export const ControlPad: FC<ControlPadProps> = ({ digitMode, onUpdateDigitMode, ...props }) => {
     return (
-        <div className="space-y-2">
+        <div className="grid grid-cols-7 gap-2">
             <NumberPad {...props} />
-            <div className="flex flex-row gap-2">
-                <button
-                    className={classNames('btn', { 'btn-active': digitMode === DigitMode.Single })}
-                    onClick={() => onUpdateDigitMode(DigitMode.Single)}
-                >
-                    Single
-                </button>
-                <button
-                    className={classNames('btn', { 'btn-active': digitMode === DigitMode.CenterNote })}
-                    onClick={() => onUpdateDigitMode(DigitMode.CenterNote)}
-                >
-                    Center
-                </button>
-                <button
-                    className={classNames('btn', { 'btn-active': digitMode === DigitMode.OuterNote })}
-                    onClick={() => onUpdateDigitMode(DigitMode.OuterNote)}
-                >
-                    Outer
-                </button>
-            </div>
+            <ModeSelectPad digitMode={digitMode} onUpdateDigitMode={onUpdateDigitMode} />
         </div>
     );
 };
