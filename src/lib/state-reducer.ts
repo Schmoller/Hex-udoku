@@ -12,6 +12,7 @@ const enum ActionType {
     ToggleSelectedCellValues = 'toggleSelectedCellValues',
     ToggleSelectedCellCenterNote = 'toggleSelectedCellCenterNote',
     ToggleSelectedCellOuterNote = 'toggleSelectedCellOuterNote',
+    NewGame = 'newGame',
 }
 
 type GameUpdateAction =
@@ -22,9 +23,10 @@ type GameUpdateAction =
     | { type: ActionType.ClearSelectedCells; full?: boolean }
     | { type: ActionType.ToggleSelectedCellValues; value: number | null }
     | { type: ActionType.ToggleSelectedCellCenterNote; value: number }
-    | { type: ActionType.ToggleSelectedCellOuterNote; value: number };
+    | { type: ActionType.ToggleSelectedCellOuterNote; value: number }
+    | { type: ActionType.NewGame };
 
-function gameStateReducer(state: GameBoardState, action: GameUpdateAction): GameBoardState {
+function gameStateReducer(metadata: GameMetadata, state: GameBoardState, action: GameUpdateAction): GameBoardState {
     switch (action.type) {
         case ActionType.RestartSelection: {
             state = cloneGameState(state);
@@ -189,6 +191,9 @@ function gameStateReducer(state: GameBoardState, action: GameUpdateAction): Game
             state = updateBoardValidity(state);
             return state;
         }
+        case ActionType.NewGame: {
+            return initialiseGameState(metadata);
+        }
     }
     return state;
 }
@@ -202,11 +207,12 @@ export interface GameStateUpdater {
     toggleSelectedCellValues(value: number | null): void;
     toggleSelectedCellCenterNote(value: number): void;
     toggleSelectedCellOuterNote(value: number): void;
+    newGame(): void;
 }
 
 export function useGameState(metadata: GameMetadata): [GameBoardState, GameStateUpdater] {
     const [state, dispatch] = useReducer<GameBoardState, GameMetadata, [GameUpdateAction]>(
-        gameStateReducer,
+        gameStateReducer.bind(undefined, metadata),
         metadata,
         initialiseGameState,
     );
@@ -236,6 +242,9 @@ export function useGameState(metadata: GameMetadata): [GameBoardState, GameState
             },
             toggleSelectedCellOuterNote: (value: number) => {
                 dispatch({ type: ActionType.ToggleSelectedCellOuterNote, value });
+            },
+            newGame: () => {
+                dispatch({ type: ActionType.NewGame });
             },
         }),
         [dispatch],

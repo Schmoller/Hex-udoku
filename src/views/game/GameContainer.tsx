@@ -1,9 +1,10 @@
-import { useCallback, useMemo, useState, type FC } from 'react';
+import { useCallback, useEffect, useMemo, useState, type FC } from 'react';
 import { type GameMetadata } from '../../lib/board';
 import { useGameState } from '../../lib/state-reducer';
 import { GameBoardUI } from './GameBoardUI';
 import { ControlPad } from './control-pad/ControlPad';
 import { DigitMode } from './common';
+import { GameCompleteModal } from './GameCompleteModal';
 
 export const GameContainer: FC = () => {
     const [showDebugInfo, setShowDebugInfo] = useState(false);
@@ -29,6 +30,10 @@ export const GameContainer: FC = () => {
         updater.clearSelectedCells();
     }, []);
 
+    const handleNewGame = useCallback(() => {
+        updater.newGame();
+    }, []);
+
     return (
         <div className="flex flex-col items-stretch gap-2">
             <GameBoardUI
@@ -38,7 +43,6 @@ export const GameContainer: FC = () => {
                 gameUpdater={updater}
                 onDigitSelect={handleDigitSelect}
             />
-            <div>Status: {state.isComplete ? 'Complete' : 'Incomplete'}</div>
             <div>
                 <ControlPad
                     digits={7}
@@ -48,6 +52,7 @@ export const GameContainer: FC = () => {
                     onClearSelected={handleClearSelected}
                 />
             </div>
+            <GameCompleteModal open={state.isComplete} onNewGameClick={handleNewGame} />
         </div>
     );
 };
