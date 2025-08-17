@@ -3,18 +3,24 @@ import { type GameMetadata } from '../../lib/board';
 import { useGameState } from '../../lib/state-reducer';
 import { GameBoardUI } from './GameBoardUI';
 import { ControlPad } from './control-pad/ControlPad';
+import { DigitMode } from './common';
 
 export const GameContainer: FC = () => {
     const [showDebugInfo, setShowDebugInfo] = useState(false);
 
     const meta = useMemo<GameMetadata>(() => ({ width: 9, height: 9 }), []);
     const [state, updater] = useGameState(meta);
+    const [digitMode, setDigitMode] = useState<DigitMode>(DigitMode.Single);
 
     const handleDigitSelect = useCallback(
         (digit: number) => {
-            updater.setSelectedCellValues(digit);
+            if (digitMode === DigitMode.Single) {
+                updater.setSelectedCellValues(digit);
+            } else if (digitMode === DigitMode.CenterNote) {
+                updater.toggleSelectedCellCenterNote(digit);
+            }
         },
-        [updater],
+        [updater, digitMode],
     );
 
     return (
@@ -25,7 +31,12 @@ export const GameContainer: FC = () => {
             </button>
             <div>Status: {state.isComplete ? 'Complete' : 'Incomplete'}</div>
             <div>
-                <ControlPad digits={7} onDigitSelect={handleDigitSelect} />
+                <ControlPad
+                    digits={7}
+                    onDigitSelect={handleDigitSelect}
+                    digitMode={digitMode}
+                    onUpdateDigitMode={setDigitMode}
+                />
             </div>
         </div>
     );

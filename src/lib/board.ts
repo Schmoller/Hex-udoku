@@ -1,5 +1,5 @@
 import { Random } from 'random';
-import { type CellState } from './cell';
+import { cloneCellState, type CellState } from './cell';
 import { HexCoordinate } from './coordinates';
 import { generateFlowerGridBoard } from './presets/flower-grid';
 import { fillBoardWithRandomNumbers } from './generator/fill';
@@ -118,4 +118,16 @@ export function initialiseGameState(metadata: GameMetadata): GameBoardState {
     pruneBoard(board, 15, random);
 
     return board;
+}
+
+export function cloneGameState(state: GameBoardState): GameBoardState {
+    const newCells = new Map<HexCoordinate, CellState>();
+    for (const cell of state.cells.values()) {
+        newCells.set(cell.coordinate, cloneCellState(cell));
+    }
+
+    return {
+        cells: newCells,
+        isComplete: state.isComplete,
+    };
 }

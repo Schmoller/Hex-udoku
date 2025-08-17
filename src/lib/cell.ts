@@ -5,7 +5,7 @@ export interface CellState {
     readonly group: number;
     value: number | null;
 
-    centerNotes: number[];
+    centerNotes: Set<number>;
 
     isSelected: boolean;
     isEditable: boolean;
@@ -17,10 +17,17 @@ export function newCellState(coordinate: HexCoordinate, group = 0): CellState {
         coordinate,
         group,
         value: null,
-        centerNotes: [],
+        centerNotes: new Set<number>(),
         isSelected: false,
         isEditable: false,
         isValid: true,
+    };
+}
+
+export function cloneCellState(state: CellState): CellState {
+    return {
+        ...state,
+        centerNotes: new Set(state.centerNotes),
     };
 }
 

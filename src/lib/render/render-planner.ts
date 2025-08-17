@@ -72,8 +72,11 @@ export function planRender(meta: GameMetadata, state: GameBoardState): RenderPla
         }
 
         let centerMarkings: string | null = null;
-        if (cell.centerNotes.length > 0 && cell.value === null) {
-            centerMarkings = cell.centerNotes.map((value) => value.toFixed(0)).join('');
+        if (cell.centerNotes.size > 0 && cell.value === null) {
+            centerMarkings = Array.from(cell.centerNotes.values())
+                .sort()
+                .map((value) => value.toFixed(0))
+                .join('');
         }
 
         cellsToRender.push({
