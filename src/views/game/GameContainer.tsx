@@ -38,9 +38,6 @@ export const GameContainer: FC = () => {
                 gameUpdater={updater}
                 onDigitSelect={handleDigitSelect}
             />
-            <button className="btn" onClick={() => setShowDebugInfo(!showDebugInfo)}>
-                Toggle Debug Info
-            </button>
             <div>Status: {state.isComplete ? 'Complete' : 'Incomplete'}</div>
             <div>
                 <ControlPad
