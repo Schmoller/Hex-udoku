@@ -64,21 +64,8 @@ export const GameBoardUI: FC<GameBoardUIProps> = ({
         drawBoard(canvasRef.current, renderPlan, gridMetrics, { showDebugInfo, padding: BoardPadding });
     }, [renderPlan, gridMetrics, showDebugInfo]);
 
-    const handleMouseDown = useCallback(
-        (event: React.MouseEvent<HTMLCanvasElement>) => {
-            const canvas = canvasRef.current;
-            if (!canvas) {
-                return;
-            }
-
-            if ((event.buttons & 0x1) !== 1) {
-                return;
-            }
-
-            const rect = canvas.getBoundingClientRect();
-            const x = event.clientX - rect.left - BoardPadding;
-            const y = event.clientY - rect.top - BoardPadding;
-
+    const handleInputStart = useCallback(
+        (x: number, y: number, multiSelect: boolean) => {
             const coordinate = canvasToHexCoordinate(x, y, gridMetrics);
             lastMoveCoord.current = coordinate;
 
@@ -88,9 +75,7 @@ export const GameBoardUI: FC<GameBoardUIProps> = ({
                 return;
             }
 
-            const isMultiSelect = event.shiftKey;
-
-            if (isMultiSelect) {
+            if (multiSelect) {
                 if (cell.isSelected) {
                     selectionMode.current = SelectionMode.Clear;
                     gameUpdater.setCellSelection(coordinate, false);
@@ -106,43 +91,135 @@ export const GameBoardUI: FC<GameBoardUIProps> = ({
         [state],
     );
 
-    const handleMouseMove = useCallback((event: React.MouseEvent<HTMLCanvasElement>) => {
+    const handleMouseDown = useCallback(
+        (event: React.MouseEvent<HTMLCanvasElement>) => {
+            const canvas = canvasRef.current;
+            if (!canvas) {
+                return;
+            }
+
+            if ((event.buttons & 0x1) !== 1) {
+                return;
+            }
+
+            const rect = canvas.getBoundingClientRect();
+            const x = event.clientX - rect.left - BoardPadding;
+            const y = event.clientY - rect.top - BoardPadding;
+
+            handleInputStart(x, y, event.shiftKey);
+        },
+        [handleInputStart],
+    );
+
+    const handleInputMove = useCallback(
+        (x: number, y: number) => {
+            const mode = selectionMode.current;
+            if (mode === SelectionMode.None) {
+                return;
+            }
+
+            const coordinate = canvasToHexCoordinate(x, y, gridMetrics);
+            // If we are at the same coordinate, don't process
+            if (coordinate === lastMoveCoord.current) {
+                return;
+            }
+
+            let select: boolean;
+            if (mode === SelectionMode.Select) {
+                select = true;
+            } else {
+                select = false;
+            }
+
+            gameUpdater.setCellSelection(coordinate, select);
+
+            lastMoveCoord.current = coordinate;
+        },
+        [gridMetrics, gameUpdater],
+    );
+
+    const handleMouseMove = useCallback(
+        (event: React.MouseEvent<HTMLCanvasElement>) => {
+            const canvas = canvasRef.current;
+            if (!canvas) {
+                return;
+            }
+
+            const rect = canvas.getBoundingClientRect();
+            const x = event.clientX - rect.left - BoardPadding;
+            const y = event.clientY - rect.top - BoardPadding;
+
+            handleInputMove(x, y);
+        },
+        [handleInputMove],
+    );
+
+    const handleInputEnd = useCallback(() => {
+        lastMoveCoord.current = null;
+        selectionMode.current = SelectionMode.None;
+    }, []);
+
+    const handleMouseUp = useCallback(() => {
+        handleInputEnd();
+    }, [handleInputEnd]);
+
+    // Register touch events for mobile devices
+    // Can't use React's onTouch events because we need to prevent default behavior
+    // to avoid scrolling and other interactions
+    useEffect(() => {
         const canvas = canvasRef.current;
         if (!canvas) {
             return;
         }
 
-        const mode = selectionMode.current;
-        if (mode === SelectionMode.None) {
-            return;
-        }
+        const handleTouchStart = (event: TouchEvent) => {
+            const canvas = canvasRef.current;
+            if (!canvas) {
+                return;
+            }
 
-        const rect = canvas.getBoundingClientRect();
-        const x = event.clientX - rect.left - BoardPadding;
-        const y = event.clientY - rect.top - BoardPadding;
+            const touch = event.touches[0];
+            const rect = canvas.getBoundingClientRect();
+            const x = touch.clientX - rect.left - BoardPadding;
+            const y = touch.clientY - rect.top - BoardPadding;
 
-        const coordinate = canvasToHexCoordinate(x, y, gridMetrics);
-        // If we are at the same coordinate, don't process
-        if (coordinate === lastMoveCoord.current) {
-            return;
-        }
+            // TODO: Check if this behaviour feels right
+            handleInputStart(x, y, event.touches.length > 1);
 
-        let select: boolean;
-        if (mode === SelectionMode.Select) {
-            select = true;
-        } else {
-            select = false;
-        }
+            event.preventDefault();
+        };
 
-        gameUpdater.setCellSelection(coordinate, select);
+        const handleTouchMove = (event: TouchEvent) => {
+            const canvas = canvasRef.current;
+            if (!canvas) {
+                return;
+            }
 
-        lastMoveCoord.current = coordinate;
-    }, []);
+            const touch = event.touches[0];
+            const rect = canvas.getBoundingClientRect();
+            const x = touch.clientX - rect.left - BoardPadding;
+            const y = touch.clientY - rect.top - BoardPadding;
 
-    const handleMouseUp = useCallback(() => {
-        lastMoveCoord.current = null;
-        selectionMode.current = SelectionMode.None;
-    }, []);
+            handleInputMove(x, y);
+
+            event.preventDefault();
+        };
+
+        const handleTouchEnd = (event: TouchEvent) => {
+            handleInputEnd();
+            event.preventDefault();
+        };
+
+        canvas.addEventListener('touchstart', handleTouchStart, { passive: false });
+        canvas.addEventListener('touchmove', handleTouchMove, { passive: false });
+        canvas.addEventListener('touchend', handleTouchEnd, { passive: false });
+
+        return () => {
+            canvas.removeEventListener('touchstart', handleTouchStart);
+            canvas.removeEventListener('touchmove', handleTouchMove);
+            canvas.removeEventListener('touchend', handleTouchEnd);
+        };
+    }, [handleInputStart, handleInputMove, handleInputEnd]);
 
     return (
         <div className="flex justify-center">
