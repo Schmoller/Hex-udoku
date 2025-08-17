@@ -173,7 +173,7 @@ export const GameBoardUI: FC<GameBoardUIProps> = ({
     );
 
     return (
-        <div className="border-4">
+        <div className="flex justify-center">
             <canvas
                 ref={canvasRef}
                 tabIndex={0}
