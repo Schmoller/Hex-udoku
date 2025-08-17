@@ -39,7 +39,8 @@ export const GameContainer: FC = () => {
 
     useEffect(() => {
         const handleKeyDown = (event: KeyboardEvent) => {
-            console.log(event);
+            let handled = false;
+            // Temporary mode switching
             if (event.shiftKey && !event.ctrlKey) {
                 setImplicitDigitMode(DigitMode.CenterNote);
             } else if (event.ctrlKey && !event.shiftKey) {
@@ -47,6 +48,32 @@ export const GameContainer: FC = () => {
             } else if (event.ctrlKey && event.shiftKey) {
                 // Not valid yet
                 setImplicitDigitMode(null);
+            }
+
+            // Digit actions
+            if (event.code.startsWith('Digit') || event.code.startsWith('Numpad')) {
+                const digit = parseInt(event.code.replace('Digit', '').replace('Numpad', ''), 10);
+                if (digit >= 1 && digit <= 7) {
+                    handleDigitSelect(digit);
+                    handled = true;
+                }
+            }
+
+            // Other actions
+            switch (event.code) {
+                case 'Escape':
+                    updater.deselectAllCells();
+                    handled = true;
+                    break;
+                case 'Delete':
+                case 'Backspace':
+                    updater.clearSelectedCells();
+                    handled = true;
+                    break;
+            }
+
+            if (handled) {
+                event.preventDefault();
             }
         };
         const handleKeyUp = (event: KeyboardEvent) => {
@@ -66,17 +93,11 @@ export const GameContainer: FC = () => {
             document.removeEventListener('keydown', handleKeyDown);
             document.removeEventListener('keyup', handleKeyUp);
         };
-    }, []);
+    }, [updater, handleDigitSelect]);
 
     return (
         <div className="flex flex-col items-stretch gap-2">
-            <GameBoardUI
-                meta={meta}
-                state={state}
-                showDebugInfo={showDebugInfo}
-                gameUpdater={updater}
-                onDigitSelect={handleDigitSelect}
-            />
+            <GameBoardUI meta={meta} state={state} showDebugInfo={showDebugInfo} gameUpdater={updater} />
             <div>
                 <ControlPad
                     digits={7}
