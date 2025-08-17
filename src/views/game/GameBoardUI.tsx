@@ -99,6 +99,14 @@ export const GameBoardUI: FC<GameBoardUIProps> = ({
                 ctx.fillStyle = cell.contentColor ?? 'black';
                 drawHexagonContents(ctx, x, y, cell.contents);
             }
+
+            if (cell.centerMarkings !== null) {
+                ctx.fillStyle = 'oklch(70.4% 0.14 182.503)';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.font = '11px Arial';
+                ctx.fillText(cell.centerMarkings, x, y);
+            }
         });
     };
 

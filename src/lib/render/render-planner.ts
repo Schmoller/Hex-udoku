@@ -71,12 +71,18 @@ export function planRender(meta: GameMetadata, state: GameBoardState): RenderPla
             backgroundColor = 'oklch(88.2% 0.059 254.128)';
         }
 
+        let centerMarkings: string | null = null;
+        if (cell.centerNotes.length > 0 && cell.value === null) {
+            centerMarkings = cell.centerNotes.map((value) => value.toFixed(0)).join('');
+        }
+
         cellsToRender.push({
             coordinate: cell.coordinate,
             segments,
             contents,
             contentColor,
             backgroundColor,
+            centerMarkings,
         });
     }
 

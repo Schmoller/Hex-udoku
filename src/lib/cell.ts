@@ -5,6 +5,8 @@ export interface CellState {
     readonly group: number;
     value: number | null;
 
+    centerNotes: number[];
+
     isSelected: boolean;
     isEditable: boolean;
     isValid: boolean;
@@ -15,6 +17,7 @@ export function newCellState(coordinate: HexCoordinate, group = 0): CellState {
         coordinate,
         group,
         value: null,
+        centerNotes: [],
         isSelected: false,
         isEditable: false,
         isValid: true,

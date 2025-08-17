@@ -12,6 +12,7 @@ export interface CellRenderState {
     contents: string | null;
     contentColor: string | null;
     backgroundColor: string | null;
+    centerMarkings: string | null;
 }
 
 export const EmptySegmentRenderPattern: Record<HexDirection, CellSegmentStyle | null> = {
