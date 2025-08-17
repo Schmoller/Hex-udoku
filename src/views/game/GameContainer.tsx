@@ -15,7 +15,7 @@ export const GameContainer: FC = () => {
     const handleDigitSelect = useCallback(
         (digit: number) => {
             if (digitMode === DigitMode.Single) {
-                updater.setSelectedCellValues(digit);
+                updater.toggleSelectedCellValues(digit);
             } else if (digitMode === DigitMode.CenterNote) {
                 updater.toggleSelectedCellCenterNote(digit);
             } else if (digitMode === DigitMode.OuterNote) {
