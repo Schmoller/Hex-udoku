@@ -11,7 +11,10 @@ export const GameContainer: FC = () => {
 
     const meta = useMemo<GameMetadata>(() => ({ width: 9, height: 9 }), []);
     const [state, updater] = useGameState(meta);
-    const [digitMode, setDigitMode] = useState<DigitMode>(DigitMode.Single);
+    const [explicitDigitMode, setExplicitDigitMode] = useState<DigitMode>(DigitMode.Single);
+    const [implicitDigitMode, setImplicitDigitMode] = useState<DigitMode | null>(null);
+
+    const digitMode = implicitDigitMode ?? explicitDigitMode;
 
     const handleDigitSelect = useCallback(
         (digit: number) => {
@@ -34,6 +37,37 @@ export const GameContainer: FC = () => {
         updater.newGame();
     }, []);
 
+    useEffect(() => {
+        const handleKeyDown = (event: KeyboardEvent) => {
+            console.log(event);
+            if (event.shiftKey && !event.ctrlKey) {
+                setImplicitDigitMode(DigitMode.CenterNote);
+            } else if (event.ctrlKey && !event.shiftKey) {
+                setImplicitDigitMode(DigitMode.OuterNote);
+            } else if (event.ctrlKey && event.shiftKey) {
+                // Not valid yet
+                setImplicitDigitMode(null);
+            }
+        };
+        const handleKeyUp = (event: KeyboardEvent) => {
+            if (event.shiftKey && !event.ctrlKey) {
+                setImplicitDigitMode(DigitMode.CenterNote);
+            } else if (event.ctrlKey && !event.shiftKey) {
+                setImplicitDigitMode(DigitMode.OuterNote);
+            } else {
+                setImplicitDigitMode(null);
+            }
+        };
+
+        document.addEventListener('keydown', handleKeyDown);
+        document.addEventListener('keyup', handleKeyUp);
+
+        return () => {
+            document.removeEventListener('keydown', handleKeyDown);
+            document.removeEventListener('keyup', handleKeyUp);
+        };
+    }, []);
+
     return (
         <div className="flex flex-col items-stretch gap-2">
             <GameBoardUI
@@ -48,7 +82,7 @@ export const GameContainer: FC = () => {
                     digits={7}
                     onDigitSelect={handleDigitSelect}
                     digitMode={digitMode}
-                    onUpdateDigitMode={setDigitMode}
+                    onUpdateDigitMode={setExplicitDigitMode}
                     onClearSelected={handleClearSelected}
                     onRestart={handleNewGame}
                 />
