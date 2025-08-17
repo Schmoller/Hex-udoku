@@ -31,6 +31,16 @@ export function drawBoard(
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.translate(options.padding, options.padding);
 
+    drawBackgroundLayer(ctx, renderPlan, gridMetrics, options);
+    drawForegroundLayer(ctx, renderPlan, gridMetrics, options);
+}
+
+function drawBackgroundLayer(
+    ctx: CanvasRenderingContext2D,
+    renderPlan: RenderPlan,
+    gridMetrics: HexGridMetrics,
+    options: RenderOptions,
+) {
     renderPlan.cellsToRender.forEach((cell) => {
         const { x, y } = hexCoordinateToCanvas(cell.coordinate, gridMetrics);
 
@@ -38,6 +48,17 @@ export function drawBoard(
             ctx.fillStyle = cell.backgroundColor;
             fillHexagon(ctx, x, y, gridMetrics);
         }
+    });
+}
+
+function drawForegroundLayer(
+    ctx: CanvasRenderingContext2D,
+    renderPlan: RenderPlan,
+    gridMetrics: HexGridMetrics,
+    options: RenderOptions,
+) {
+    renderPlan.cellsToRender.forEach((cell) => {
+        const { x, y } = hexCoordinateToCanvas(cell.coordinate, gridMetrics);
 
         if (options.showDebugInfo) {
             drawHexagonDebugInfo(ctx, cell.coordinate, gridMetrics);
