@@ -167,11 +167,11 @@ export const GameBoardUI: FC<GameBoardUIProps> = ({
             case '5':
             case '6':
             case '7':
-                gameUpdater.setSelectedCellValues(parseInt(event.key, 10));
+                gameUpdater.toggleSelectedCellValues(parseInt(event.key, 10));
                 break;
             case 'Delete':
             case 'Backspace':
-                gameUpdater.setSelectedCellValues(null);
+                gameUpdater.toggleSelectedCellValues(null);
                 break;
         }
     }, []);
