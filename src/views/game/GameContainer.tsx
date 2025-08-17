@@ -25,6 +25,10 @@ export const GameContainer: FC = () => {
         [updater, digitMode],
     );
 
+    const handleClearSelected = useCallback(() => {
+        updater.clearSelectedCells();
+    }, []);
+
     return (
         <div className="flex flex-col items-stretch gap-2">
             <GameBoardUI
@@ -44,6 +48,7 @@ export const GameContainer: FC = () => {
                     onDigitSelect={handleDigitSelect}
                     digitMode={digitMode}
                     onUpdateDigitMode={setDigitMode}
+                    onClearSelected={handleClearSelected}
                 />
             </div>
         </div>
