@@ -23,6 +23,7 @@ type GameUpdateAction =
 function gameStateReducer(state: GameBoardState, action: GameUpdateAction): GameBoardState {
     switch (action.type) {
         case ActionType.SelectCell: {
+            state = cloneGameState(state);
             const { coordinate, multi } = action;
             const cell = state.cells.get(coordinate);
 
@@ -34,10 +35,10 @@ function gameStateReducer(state: GameBoardState, action: GameUpdateAction): Game
                     }
                 }
 
-                cell.isSelected = true;
+                cell.isSelected = !cell.isSelected;
             }
 
-            return { ...state };
+            return state;
         }
         case ActionType.DeselectAllCells: {
             for (const cellState of state.cells.values()) {
