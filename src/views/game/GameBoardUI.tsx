@@ -11,12 +11,19 @@ import {
     type HexGridMetrics,
 } from '../../lib/render/hexagons';
 import { planRender } from '../../lib/render/render-planner';
-import { AllHexDirections } from '../../lib/coordinates';
+import { AllHexDirections, HexCoordinate } from '../../lib/coordinates';
 
 const DefaultSize = 32;
 const BoardPadding = 16;
 
 const OuterNoteArc = (30 * Math.PI) / 180;
+
+const enum SelectionMode {
+    None,
+    Select,
+    Clear,
+}
+
 export interface GameBoardUIProps {
     meta: GameMetadata;
     state: GameBoardState;
@@ -39,6 +46,8 @@ export const GameBoardUI: FC<GameBoardUIProps> = ({
     showDebugInfo,
 }) => {
     const canvasRef = useRef<HTMLCanvasElement>(null);
+    const lastMoveCoord = useRef<HexCoordinate | null>(null);
+    const selectionMode = useRef<SelectionMode>(SelectionMode.None);
 
     const gridMetrics = useMemo<HexGridMetrics>(
         () => ({
@@ -133,9 +142,56 @@ export const GameBoardUI: FC<GameBoardUIProps> = ({
         drawBoard();
     }, [renderPlan, gridMetrics, showDebugInfo]);
 
-    const handleMouseDown = useCallback((event: React.MouseEvent<HTMLCanvasElement>) => {
+    const handleMouseDown = useCallback(
+        (event: React.MouseEvent<HTMLCanvasElement>) => {
+            const canvas = canvasRef.current;
+            if (!canvas) {
+                return;
+            }
+
+            if ((event.buttons & 0x1) !== 1) {
+                return;
+            }
+
+            const rect = canvas.getBoundingClientRect();
+            const x = event.clientX - rect.left - BoardPadding;
+            const y = event.clientY - rect.top - BoardPadding;
+
+            const coordinate = canvasToHexCoordinate(x, y, gridMetrics);
+            lastMoveCoord.current = coordinate;
+
+            const cell = state.cells.get(coordinate);
+            if (!cell) {
+                gameUpdater.deselectAllCells();
+                return;
+            }
+
+            const isMultiSelect = event.shiftKey;
+
+            if (isMultiSelect) {
+                if (cell.isSelected) {
+                    selectionMode.current = SelectionMode.Clear;
+                    gameUpdater.setCellSelection(coordinate, false);
+                } else {
+                    selectionMode.current = SelectionMode.Select;
+                    gameUpdater.setCellSelection(coordinate, true);
+                }
+            } else {
+                gameUpdater.restartSelection(coordinate);
+                selectionMode.current = SelectionMode.Select;
+            }
+        },
+        [state],
+    );
+
+    const handleMouseMove = useCallback((event: React.MouseEvent<HTMLCanvasElement>) => {
         const canvas = canvasRef.current;
         if (!canvas) {
+            return;
+        }
+
+        const mode = selectionMode.current;
+        if (mode === SelectionMode.None) {
             return;
         }
 
@@ -144,14 +200,26 @@ export const GameBoardUI: FC<GameBoardUIProps> = ({
         const y = event.clientY - rect.top - BoardPadding;
 
         const coordinate = canvasToHexCoordinate(x, y, gridMetrics);
-
-        const cell = state.cells.get(coordinate);
-        if (!cell) {
-            gameUpdater.deselectAllCells();
+        // If we are at the same coordinate, don't process
+        if (coordinate === lastMoveCoord.current) {
             return;
         }
 
-        gameUpdater.selectCell(coordinate, event.ctrlKey);
+        let select: boolean;
+        if (mode === SelectionMode.Select) {
+            select = true;
+        } else {
+            select = false;
+        }
+
+        gameUpdater.setCellSelection(coordinate, select);
+
+        lastMoveCoord.current = coordinate;
+    }, []);
+
+    const handleMouseUp = useCallback(() => {
+        lastMoveCoord.current = null;
+        selectionMode.current = SelectionMode.None;
     }, []);
 
     const handleKeyPress = useCallback((event: React.KeyboardEvent<HTMLCanvasElement>) => {
@@ -184,6 +252,8 @@ export const GameBoardUI: FC<GameBoardUIProps> = ({
                 width={gridMetrics.horizontalSpacing * (meta.width - 1) + gridMetrics.cellWidth + BoardPadding * 2}
                 height={gridMetrics.verticalSpacing * meta.height + gridMetrics.cellHeight / 2 + BoardPadding * 2}
                 onMouseDown={handleMouseDown}
+                onMouseMove={handleMouseMove}
+                onMouseUp={handleMouseUp}
                 onKeyDown={handleKeyPress}
             />
         </div>

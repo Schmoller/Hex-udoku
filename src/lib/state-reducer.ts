@@ -4,7 +4,8 @@ import type { HexCoordinate } from './coordinates';
 import { updateBoardValidity } from './validity';
 
 const enum ActionType {
-    SelectCell = 'selectCell',
+    RestartSelection = 'restartSelection',
+    SetCellSelection = 'setCellSelection',
     DeselectAllCells = 'deselectAllCells',
     EditValue = 'editValue',
     ToggleSelectedCellValues = 'toggleSelectedCellValues',
@@ -13,7 +14,8 @@ const enum ActionType {
 }
 
 type GameUpdateAction =
-    | { type: ActionType.SelectCell; coordinate: HexCoordinate; multi?: boolean }
+    | { type: ActionType.RestartSelection; coordinate: HexCoordinate }
+    | { type: ActionType.SetCellSelection; coordinate: HexCoordinate; selected: boolean }
     | { type: ActionType.DeselectAllCells }
     | { type: ActionType.EditValue; coordinate: HexCoordinate; value: number | null }
     | { type: ActionType.ToggleSelectedCellValues; value: number | null }
@@ -22,20 +24,29 @@ type GameUpdateAction =
 
 function gameStateReducer(state: GameBoardState, action: GameUpdateAction): GameBoardState {
     switch (action.type) {
-        case ActionType.SelectCell: {
+        case ActionType.RestartSelection: {
             state = cloneGameState(state);
-            const { coordinate, multi } = action;
+            const { coordinate } = action;
             const cell = state.cells.get(coordinate);
 
             if (cell) {
-                if (!multi) {
-                    // Deselect all cells first
-                    for (const cellState of state.cells.values()) {
-                        cellState.isSelected = false;
-                    }
+                // Deselect all cells first
+                for (const cellState of state.cells.values()) {
+                    cellState.isSelected = false;
                 }
 
-                cell.isSelected = !cell.isSelected;
+                cell.isSelected = true;
+            }
+
+            return state;
+        }
+        case ActionType.SetCellSelection: {
+            state = cloneGameState(state);
+            const { coordinate, selected } = action;
+            const cell = state.cells.get(coordinate);
+
+            if (cell) {
+                cell.isSelected = selected;
             }
 
             return state;
@@ -154,7 +165,8 @@ function gameStateReducer(state: GameBoardState, action: GameUpdateAction): Game
 }
 
 export interface GameStateUpdater {
-    selectCell(coordinate: HexCoordinate, multi?: boolean): void;
+    restartSelection(coordinate: HexCoordinate): void;
+    setCellSelection(coordinate: HexCoordinate, selected: boolean): void;
     deselectAllCells(): void;
     editCellValue(coordinate: HexCoordinate, value: number | null): void;
     toggleSelectedCellValues(value: number | null): void;
@@ -171,8 +183,11 @@ export function useGameState(metadata: GameMetadata): [GameBoardState, GameState
 
     const gameStateUpdater = useMemo<GameStateUpdater>(
         () => ({
-            selectCell: (coordinate: HexCoordinate, multi = false) => {
-                dispatch({ type: ActionType.SelectCell, coordinate, multi });
+            restartSelection: (coordinate: HexCoordinate) => {
+                dispatch({ type: ActionType.RestartSelection, coordinate });
+            },
+            setCellSelection: (coordinate: HexCoordinate, selected: boolean) => {
+                dispatch({ type: ActionType.SetCellSelection, coordinate, selected });
             },
             deselectAllCells: () => {
                 dispatch({ type: ActionType.DeselectAllCells });
