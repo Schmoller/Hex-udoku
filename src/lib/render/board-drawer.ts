@@ -10,6 +10,8 @@ import {
 import type { RenderPlan } from './render-planner';
 
 const OuterNoteArc = (30 * Math.PI) / 180;
+const NormalSegmentWidth = 1;
+const ThickSegmentWidth = 3;
 
 interface RenderOptions {
     padding: number;
@@ -30,7 +32,11 @@ export function drawBoard(
     ctx.resetTransform();
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+    const ratio = Math.ceil(window.devicePixelRatio);
+    ctx.scale(ratio, ratio);
+
     ctx.translate(options.padding + gridMetrics.horizontalOffset, options.padding);
+    ctx.translate(0.5, 0.5);
 
     drawBackgroundLayer(ctx, renderPlan, gridMetrics, options);
     drawForegroundLayer(ctx, renderPlan, gridMetrics, options);
@@ -58,6 +64,9 @@ function drawForegroundLayer(
     gridMetrics: HexGridMetrics,
     options: RenderOptions,
 ) {
+    const digitFontSize = Math.floor(gridMetrics.innerSize * 0.85);
+    const markerFontSize = Math.floor(gridMetrics.innerSize * 0.35);
+
     renderPlan.cellsToRender.forEach((cell) => {
         const { x, y } = hexCoordinateToCanvas(cell.coordinate, gridMetrics);
 
@@ -74,13 +83,23 @@ function drawForegroundLayer(
                 continue;
             }
 
-            ctx.lineWidth = segment.width;
+            switch (segment.type) {
+                case 'thick':
+                    ctx.lineWidth = ThickSegmentWidth;
+                    break;
+                case 'normal':
+                default:
+                    ctx.lineWidth = NormalSegmentWidth;
+                    break;
+            }
+
             ctx.strokeStyle = segment.color;
             drawHexagonSegment(ctx, x, y, direction, gridMetrics);
         }
 
         if (cell.contents !== null) {
             ctx.fillStyle = cell.contentColor ?? 'black';
+            ctx.font = `bold ${digitFontSize}px monospace`;
             drawHexagonContents(ctx, x, y, cell.contents);
         }
 
@@ -88,7 +107,7 @@ function drawForegroundLayer(
             ctx.fillStyle = 'oklch(70.4% 0.14 182.503)';
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
-            ctx.font = '11px Arial';
+            ctx.font = `${markerFontSize}px Arial`;
             ctx.fillText(cell.centerMarkings, x, y);
         }
 
@@ -96,7 +115,7 @@ function drawForegroundLayer(
             ctx.fillStyle = 'oklch(69.6% 0.17 162.48)';
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
-            ctx.font = '11px Arial';
+            ctx.font = `${markerFontSize}px Arial`;
 
             let startAngle = -((cell.outerMarkings.length - 1) / 2) * OuterNoteArc;
             for (const mark of cell.outerMarkings) {

@@ -3,9 +3,6 @@ import { isCellSameGroup } from '../cell';
 import { AllHexDirections, HexCoordinate, HexDirection } from '../coordinates';
 import { EmptySegmentRenderPattern, type CellRenderState, type CellSegmentStyle } from './cell';
 
-const NormalSegmentWidth = 1;
-const ThickSegmentWidth = 4;
-
 export interface RenderPlan {
     cellsToRender: CellRenderState[];
     widthInCells: number;
@@ -54,7 +51,7 @@ export function planRender(meta: GameMetadata, state: GameBoardState): RenderPla
 
             segments[direction] = {
                 render: true,
-                width: shouldDisplayThickBorder ? ThickSegmentWidth : NormalSegmentWidth,
+                type: shouldDisplayThickBorder ? 'thick' : 'normal',
                 color: 'black',
             };
         }

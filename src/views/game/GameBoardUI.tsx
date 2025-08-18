@@ -228,15 +228,14 @@ export const GameBoardUI: FC<GameBoardUIProps> = ({
                 return;
             }
 
+            const ratio = Math.ceil(window.devicePixelRatio);
             const { clientWidth, clientHeight } = container;
-            canvas.width = clientWidth;
-            canvas.height = clientHeight;
+            canvas.width = clientWidth * ratio;
+            canvas.height = clientHeight * ratio;
 
-            const minSize = Math.min(canvas.width, canvas.height);
-            // const gridSize = renderPlan.widthInCells;
+            const minSize = Math.min(clientWidth, clientHeight);
             const gridSize = 8;
             const cellSize = (2 * minSize - 4 * BoardPadding) / (3 * gridSize + 4);
-            console.log('CW: ', clientWidth, 'CS: ', cellSize);
 
             setGridMetrics({
                 innerSize: cellSize,
@@ -246,8 +245,6 @@ export const GameBoardUI: FC<GameBoardUIProps> = ({
                 verticalSpacing: Math.sqrt(3) * cellSize,
                 horizontalOffset: (clientWidth - minSize) / 2,
             });
-
-            // drawBoard(canvas, renderPlan, gridMetrics, { showDebugInfo, padding: BoardPadding });
         };
 
         // Update canvas size on mount and whenever the container resizes

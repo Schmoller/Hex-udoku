@@ -163,7 +163,6 @@ export function drawHexagonDebugInfo(
 }
 
 export function drawHexagonContents(ctx: CanvasRenderingContext2D, x: number, y: number, contents: string) {
-    ctx.font = 'bold 24px monospace';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillText(contents, x, y);

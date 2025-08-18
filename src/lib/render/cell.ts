@@ -2,7 +2,7 @@ import { HexDirection, type HexCoordinate } from '../coordinates';
 
 export interface CellSegmentStyle {
     render: boolean;
-    width: number;
+    type: 'normal' | 'thick';
     color: string;
 }
 
