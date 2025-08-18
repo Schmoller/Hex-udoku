@@ -24,14 +24,18 @@ export const ControlPad: FC<ControlPadProps> = ({
             <NumberPad {...props} />
             <ModeSelectPad digitMode={digitMode} onUpdateDigitMode={onUpdateDigitMode} />
             <button className="btn col-start-7" title="Clear selected cells" onClick={onClearSelected}>
-                <ClearIcon />
+                <div>
+                    <ClearIcon />
+                </div>
             </button>
             <button
                 className="btn btn-ghost btn-error col-start-7"
                 title="Restart game"
                 onClick={() => setShowRestartConfirmation(true)}
             >
-                <RestartIcon />
+                <div>
+                    <RestartIcon />
+                </div>
             </button>
             <GameRestartModal
                 open={showRestartConfirmation}
