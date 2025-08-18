@@ -1,4 +1,4 @@
-import { useReducer, useMemo } from 'react';
+import { useReducer, useMemo, use } from 'react';
 import { cloneGameState, type GameBoardState, type GameMetadata, initialiseGameState } from './board';
 import type { HexCoordinate } from './coordinates';
 import { updateBoardValidity } from './validity';
@@ -217,11 +217,15 @@ export interface GameStateUpdater {
     newGame(): void;
 }
 
-export function useGameState(metadata: GameMetadata): [GameBoardState, GameStateUpdater] {
-    const [state, dispatch] = useReducer<GameBoardState, GameMetadata, [GameUpdateAction]>(
+export function useGameState(
+    metadata: GameMetadata,
+    initialiser: Promise<GameBoardState>,
+): [GameBoardState, GameStateUpdater] {
+    const initialGameState = use(initialiser);
+
+    const [state, dispatch] = useReducer<GameBoardState, [GameUpdateAction]>(
         gameStateReducer.bind(undefined, metadata),
-        metadata,
-        initialiseGameState,
+        initialGameState,
     );
 
     const gameStateUpdater = useMemo<GameStateUpdater>(

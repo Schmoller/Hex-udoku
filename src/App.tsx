@@ -1,10 +1,10 @@
-import { GameContainer } from './views/game/GameContainer';
 import { MainLayout } from './layouts/MainLayout';
+import { GameLoadingContainer } from './views/game/GameLoadingContainer';
 
 function App() {
     return (
         <MainLayout>
-            <GameContainer />
+            <GameLoadingContainer />
         </MainLayout>
     );
 }

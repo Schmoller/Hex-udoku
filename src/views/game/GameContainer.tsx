@@ -1,16 +1,20 @@
 import { useCallback, useEffect, useMemo, useState, type FC } from 'react';
-import { type GameMetadata } from '../../lib/board';
+import { type GameBoardState, type GameMetadata } from '../../lib/board';
 import { useGameState } from '../../lib/state-reducer';
 import { GameBoardUI } from './GameBoardUI';
 import { ControlPad } from './control-pad/ControlPad';
 import { DigitMode } from './common';
 import { GameCompleteModal } from './GameCompleteModal';
 
-export const GameContainer: FC = () => {
+interface GameContainerProps {
+    boardInitialiser: Promise<GameBoardState>;
+    metadata: GameMetadata;
+}
+
+export const GameContainer: FC<GameContainerProps> = ({ boardInitialiser, metadata }) => {
     const [showDebugInfo, setShowDebugInfo] = useState(false);
 
-    const meta = useMemo<GameMetadata>(() => ({ width: 9, height: 9 }), []);
-    const [state, updater] = useGameState(meta);
+    const [state, updater] = useGameState(metadata, boardInitialiser);
     const [explicitDigitMode, setExplicitDigitMode] = useState<DigitMode>(DigitMode.Single);
     const [implicitDigitMode, setImplicitDigitMode] = useState<DigitMode | null>(null);
 
@@ -97,7 +101,7 @@ export const GameContainer: FC = () => {
 
     return (
         <div className="flex flex-grow flex-col items-stretch gap-2 w-full sm:w-xl max-h-[50rem] justify-end md:justify-start">
-            <GameBoardUI meta={meta} state={state} showDebugInfo={showDebugInfo} gameUpdater={updater} />
+            <GameBoardUI meta={metadata} state={state} showDebugInfo={showDebugInfo} gameUpdater={updater} />
             <div>
                 <ControlPad
                     digits={7}
