@@ -33,13 +33,20 @@ function gameStateReducer(metadata: GameMetadata, state: GameBoardState, action:
             const { coordinate } = action;
             const cell = state.cells.get(coordinate);
 
-            if (cell) {
-                // Deselect all cells first
-                for (const cellState of state.cells.values()) {
-                    cellState.isSelected = false;
-                }
+            const selectedCount = Array.from(state.cells.values()).filter((c) => c.isSelected).length;
 
-                cell.isSelected = true;
+            if (cell) {
+                // Toggle selection if only one cell was selected
+                if (selectedCount === 1) {
+                    cell.isSelected = !cell.isSelected;
+                } else {
+                    // Deselect all cells first
+                    for (const cellState of state.cells.values()) {
+                        cellState.isSelected = false;
+                    }
+
+                    cell.isSelected = true;
+                }
             }
 
             return state;
