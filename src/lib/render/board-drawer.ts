@@ -29,7 +29,8 @@ export function drawBoard(
 
     ctx.resetTransform();
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.translate(options.padding, options.padding);
+
+    ctx.translate(options.padding + gridMetrics.horizontalOffset, options.padding);
 
     drawBackgroundLayer(ctx, renderPlan, gridMetrics, options);
     drawForegroundLayer(ctx, renderPlan, gridMetrics, options);

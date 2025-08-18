@@ -96,7 +96,7 @@ export const GameContainer: FC = () => {
     }, [updater, handleDigitSelect]);
 
     return (
-        <div className="flex flex-col items-stretch gap-2">
+        <div className="flex flex-grow flex-col items-stretch gap-2 w-full sm:w-xl max-h-[50rem] justify-end md:justify-start">
             <GameBoardUI meta={meta} state={state} showDebugInfo={showDebugInfo} gameUpdater={updater} />
             <div>
                 <ControlPad

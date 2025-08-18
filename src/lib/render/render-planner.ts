@@ -8,6 +8,7 @@ const ThickSegmentWidth = 4;
 
 export interface RenderPlan {
     cellsToRender: CellRenderState[];
+    widthInCells: number;
 }
 
 /**
@@ -22,7 +23,13 @@ export function planRender(meta: GameMetadata, state: GameBoardState): RenderPla
     const cellsToRender: CellRenderState[] = [];
     const visitedCells = new Set<HexCoordinate>();
 
+    let minQ = Infinity;
+    let maxQ = -Infinity;
+
     for (const cell of state.cells.values()) {
+        minQ = Math.min(cell.coordinate.q, minQ);
+        maxQ = Math.max(cell.coordinate.q, maxQ);
+
         visitedCells.add(cell.coordinate);
 
         const segments: Record<HexDirection, CellSegmentStyle | null> = {
@@ -99,5 +106,6 @@ export function planRender(meta: GameMetadata, state: GameBoardState): RenderPla
 
     return {
         cellsToRender,
+        widthInCells: maxQ - minQ,
     };
 }

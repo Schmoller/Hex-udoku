@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, type FC } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type FC } from 'react';
 import type { GameBoardState, GameMetadata } from '../../lib/board';
 import type { GameStateUpdater } from '../../lib/state-reducer';
 import { canvasToHexCoordinate, type HexGridMetrics } from '../../lib/render/hexagons';
@@ -7,7 +7,7 @@ import { HexCoordinate } from '../../lib/coordinates';
 import { drawBoard } from '../../lib/render/board-drawer';
 
 const DefaultSize = 32;
-const BoardPadding = 16;
+const BoardPadding = 8;
 
 const enum SelectionMode {
     None,
@@ -37,19 +37,18 @@ export const GameBoardUI: FC<GameBoardUIProps> = ({
     showDebugInfo,
 }) => {
     const canvasRef = useRef<HTMLCanvasElement>(null);
+    const containerRef = useRef<HTMLDivElement>(null);
     const lastMoveCoord = useRef<HexCoordinate | null>(null);
     const selectionMode = useRef<SelectionMode>(SelectionMode.None);
 
-    const gridMetrics = useMemo<HexGridMetrics>(
-        () => ({
-            innerSize: cellSize,
-            cellWidth: cellSize * 2,
-            cellHeight: Math.sqrt(3) * cellSize,
-            horizontalSpacing: cellSize * 1.5,
-            verticalSpacing: Math.sqrt(3) * cellSize,
-        }),
-        [cellSize],
-    );
+    const [gridMetrics, setGridMetrics] = useState<HexGridMetrics>(() => ({
+        innerSize: cellSize,
+        cellWidth: cellSize * 2,
+        cellHeight: Math.sqrt(3) * cellSize,
+        horizontalSpacing: cellSize * 1.5,
+        verticalSpacing: Math.sqrt(3) * cellSize,
+        horizontalOffset: 0,
+    }));
 
     const renderPlan = useMemo(() => {
         return planRender(meta, state);
@@ -88,7 +87,7 @@ export const GameBoardUI: FC<GameBoardUIProps> = ({
                 selectionMode.current = SelectionMode.Select;
             }
         },
-        [state],
+        [state, gridMetrics],
     );
 
     const handleMouseDown = useCallback(
@@ -221,12 +220,50 @@ export const GameBoardUI: FC<GameBoardUIProps> = ({
         };
     }, [handleInputStart, handleInputMove, handleInputEnd]);
 
+    useEffect(() => {
+        const updateCanvasSize = () => {
+            const container = containerRef.current;
+            const canvas = canvasRef.current;
+            if (!container || !canvas) {
+                return;
+            }
+
+            const { clientWidth, clientHeight } = container;
+            canvas.width = clientWidth;
+            canvas.height = clientHeight;
+
+            const minSize = Math.min(canvas.width, canvas.height);
+            // const gridSize = renderPlan.widthInCells;
+            const gridSize = 8;
+            const cellSize = (2 * minSize - 4 * BoardPadding) / (3 * gridSize + 4);
+            console.log('CW: ', clientWidth, 'CS: ', cellSize);
+
+            setGridMetrics({
+                innerSize: cellSize,
+                cellWidth: cellSize * 2,
+                cellHeight: Math.sqrt(3) * cellSize,
+                horizontalSpacing: cellSize * 1.5,
+                verticalSpacing: Math.sqrt(3) * cellSize,
+                horizontalOffset: (clientWidth - minSize) / 2,
+            });
+
+            // drawBoard(canvas, renderPlan, gridMetrics, { showDebugInfo, padding: BoardPadding });
+        };
+
+        // Update canvas size on mount and whenever the container resizes
+        updateCanvasSize();
+        window.addEventListener('resize', updateCanvasSize);
+
+        return () => {
+            window.removeEventListener('resize', updateCanvasSize);
+        };
+    }, []);
+
     return (
-        <div className="flex justify-center">
+        <div ref={containerRef} className="flex justify-center min-h-0 min-w-0 aspect-square relative">
             <canvas
                 ref={canvasRef}
-                width={gridMetrics.horizontalSpacing * (meta.width - 1) + gridMetrics.cellWidth + BoardPadding * 2}
-                height={gridMetrics.verticalSpacing * meta.height + gridMetrics.cellHeight / 2 + BoardPadding * 2}
+                className="w-full h-full absolute"
                 onMouseDown={handleMouseDown}
                 onMouseMove={handleMouseMove}
                 onMouseUp={handleMouseUp}
