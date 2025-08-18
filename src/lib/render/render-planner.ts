@@ -1,7 +1,13 @@
 import type { GameBoardState, GameMetadata } from '../board';
 import { isCellSameGroup } from '../cell';
 import { AllHexDirections, HexCoordinate, HexDirection } from '../coordinates';
-import { EmptySegmentRenderPattern, type CellRenderState, type CellSegmentStyle } from './cell';
+import {
+    EmptySegmentRenderPattern,
+    type BackgroundType,
+    type CellRenderState,
+    type CellSegmentStyle,
+    type ContentType,
+} from './cell';
 
 export interface RenderPlan {
     cellsToRender: CellRenderState[];
@@ -52,27 +58,26 @@ export function planRender(meta: GameMetadata, state: GameBoardState): RenderPla
             segments[direction] = {
                 render: true,
                 type: shouldDisplayThickBorder ? 'thick' : 'normal',
-                color: 'black',
             };
         }
 
         let contents: string | null = null;
-        let contentColor: string | null = null;
+        let contentType: ContentType | null = null;
         if (cell.value !== null) {
             contents = cell.value.toFixed(0);
 
             if (!cell.isValid) {
-                contentColor = 'oklch(57.7% 0.245 27.325)';
+                contentType = 'wrong';
             } else if (cell.isEditable) {
-                contentColor = 'oklch(39.1% 0.09 240.876)';
+                contentType = 'guess';
             } else {
-                contentColor = 'black';
+                contentType = 'clue';
             }
         }
 
-        let backgroundColor: string | null = null;
+        let backgroundType: BackgroundType = 'none';
         if (cell.isSelected) {
-            backgroundColor = 'oklch(88.2% 0.059 254.128)';
+            backgroundType = 'selected';
         }
 
         let centerMarkings: string | null = null;
@@ -94,8 +99,8 @@ export function planRender(meta: GameMetadata, state: GameBoardState): RenderPla
             coordinate: cell.coordinate,
             segments,
             contents,
-            contentColor,
-            backgroundColor,
+            contentType,
+            backgroundType,
             centerMarkings,
             outerMarkings,
         });

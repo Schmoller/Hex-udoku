@@ -1,17 +1,19 @@
 import { HexDirection, type HexCoordinate } from '../coordinates';
 
+export type CellSegmentType = 'normal' | 'thick';
+export type ContentType = 'clue' | 'guess' | 'wrong';
+export type BackgroundType = 'none' | 'selected';
 export interface CellSegmentStyle {
     render: boolean;
-    type: 'normal' | 'thick';
-    color: string;
+    type: CellSegmentType;
 }
 
 export interface CellRenderState {
     coordinate: HexCoordinate;
     segments: Record<HexDirection, CellSegmentStyle | null>;
     contents: string | null;
-    contentColor: string | null;
-    backgroundColor: string | null;
+    contentType: ContentType | null;
+    backgroundType: BackgroundType;
     centerMarkings: string | null;
     outerMarkings: string[];
 }

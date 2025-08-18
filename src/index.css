@@ -1,2 +1,19 @@
 @import 'tailwindcss';
 @plugin 'daisyui';
+
+:root {
+    --game-board-line-color: var(--color-base-content);
+    --game-board-clue-color: var(--color-base-content);
+    --game-board-guess-color: var(--color-accent);
+    --game-board-wrong-color: var(--color-error);
+    --game-board-note-outer-color: var(--color-accent);
+    --game-board-note-center-color: var(--color-info);
+    --game-board-selected-color: color-mix(in lab, var(--color-primary) 10%, transparent);
+}
+
+/* In dark mode */
+@media (prefers-color-scheme: dark) {
+    :root {
+        --game-board-selected-color: color-mix(in lab, var(--color-primary) 50%, transparent);
+    }
+}
