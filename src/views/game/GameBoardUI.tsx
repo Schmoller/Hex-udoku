@@ -40,6 +40,7 @@ export const GameBoardUI: FC<GameBoardUIProps> = ({
     const containerRef = useRef<HTMLDivElement>(null);
     const lastMoveCoord = useRef<HexCoordinate | null>(null);
     const selectionMode = useRef<SelectionMode>(SelectionMode.None);
+    const [styleMode, setStyleMode] = useState<'light' | 'dark' | 'default'>('default');
 
     const [gridMetrics, setGridMetrics] = useState<HexGridMetrics>(() => ({
         innerSize: cellSize,
@@ -61,7 +62,7 @@ export const GameBoardUI: FC<GameBoardUIProps> = ({
         }
 
         drawBoard(canvasRef.current, renderPlan, gridMetrics, { showDebugInfo, padding: BoardPadding });
-    }, [renderPlan, gridMetrics, showDebugInfo]);
+    }, [renderPlan, gridMetrics, showDebugInfo, styleMode]);
 
     const handleInputStart = useCallback(
         (x: number, y: number, multiSelect: boolean) => {
@@ -209,14 +210,21 @@ export const GameBoardUI: FC<GameBoardUIProps> = ({
             event.preventDefault();
         };
 
+        const handleStyleChange = (event: MediaQueryListEvent) => {
+            console.log('Style changed, re-rendering board');
+            setStyleMode(event.matches ? 'dark' : 'light');
+        };
+
         canvas.addEventListener('touchstart', handleTouchStart, { passive: false });
         canvas.addEventListener('touchmove', handleTouchMove, { passive: false });
         canvas.addEventListener('touchend', handleTouchEnd, { passive: false });
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', handleStyleChange);
 
         return () => {
             canvas.removeEventListener('touchstart', handleTouchStart);
             canvas.removeEventListener('touchmove', handleTouchMove);
             canvas.removeEventListener('touchend', handleTouchEnd);
+            window.matchMedia('(prefers-color-scheme: dark)').removeEventListener('change', handleStyleChange);
         };
     }, [handleInputStart, handleInputMove, handleInputEnd]);
 
