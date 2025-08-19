@@ -2,6 +2,7 @@ import { useReducer, useMemo, use } from 'react';
 import { cloneGameState, type GameBoardState, type GameMetadata, initialiseGameState } from './board';
 import type { HexCoordinate } from './coordinates';
 import { updateBoardValidity } from './validity';
+import { clearNotesInAppropriateCells } from './utils/note-clearer';
 
 const enum ActionType {
     RestartSelection = 'restartSelection',
@@ -73,6 +74,9 @@ function gameStateReducer(metadata: GameMetadata, state: GameBoardState, action:
             const cell = state.cells.get(coordinate);
             if (cell && cell.isEditable) {
                 cell.value = value;
+                if (value != null) {
+                    clearNotesInAppropriateCells(state, value, cell.coordinate);
+                }
             }
 
             let board = { ...state };
@@ -93,6 +97,9 @@ function gameStateReducer(metadata: GameMetadata, state: GameBoardState, action:
                 if (cellState.value !== value) {
                     areAllSet = false;
                     cellState.value = value;
+                    if (value != null) {
+                        clearNotesInAppropriateCells(state, value, cellState.coordinate);
+                    }
                 }
             }
 
