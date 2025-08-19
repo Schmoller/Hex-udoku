@@ -17,6 +17,7 @@ export function serialiseGameState(state: GameBoardState): string {
     return JSON.stringify({
         cells: serialisedCells,
         isComplete: state.isComplete,
+        highlightValue: state.highlightValue,
     });
 }
 
@@ -44,5 +45,6 @@ export function deserialiseGameState(serialised: string): GameBoardState {
     return {
         cells,
         isComplete: data.isComplete,
+        highlightValue: data.highlightValue,
     };
 }

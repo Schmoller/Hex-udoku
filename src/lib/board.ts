@@ -33,6 +33,8 @@ export interface GameBoardState {
      * Holds the status of whether the whole board is complete and valid.
      */
     readonly isComplete: boolean;
+
+    readonly highlightValue: number | null;
 }
 
 export const enum UnitType {
@@ -111,6 +113,7 @@ export function initialiseGameState(metadata: GameMetadata): GameBoardState {
     const board: GameBoardState = {
         cells: generateResult.cells,
         isComplete: false,
+        highlightValue: null,
     };
 
     const random = new Random();
@@ -129,5 +132,6 @@ export function cloneGameState(state: GameBoardState): GameBoardState {
     return {
         cells: newCells,
         isComplete: state.isComplete,
+        highlightValue: null,
     };
 }

@@ -79,6 +79,9 @@ export function planRender(meta: GameMetadata, state: GameBoardState): RenderPla
         if (cell.isSelected) {
             backgroundType = 'selected';
         }
+        if (state.highlightValue !== null && cell.value === state.highlightValue) {
+            backgroundType = 'highlighted';
+        }
 
         let centerMarkings: string | null = null;
         if (cell.centerNotes.size > 0 && cell.value === null) {

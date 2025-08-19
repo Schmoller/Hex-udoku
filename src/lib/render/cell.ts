@@ -2,7 +2,7 @@ import { HexDirection, type HexCoordinate } from '../coordinates';
 
 export type CellSegmentType = 'normal' | 'thick';
 export type ContentType = 'clue' | 'guess' | 'wrong';
-export type BackgroundType = 'none' | 'selected';
+export type BackgroundType = 'none' | 'selected' | 'highlighted';
 export interface CellSegmentStyle {
     render: boolean;
     type: CellSegmentType;

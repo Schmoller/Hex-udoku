@@ -50,6 +50,8 @@ function gameStateReducer(metadata: GameMetadata, state: GameBoardState, action:
                 }
             }
 
+            state = updateHighlightedDigit(state);
+
             return state;
         }
         case ActionType.SetCellSelection: {
@@ -61,13 +63,16 @@ function gameStateReducer(metadata: GameMetadata, state: GameBoardState, action:
                 cell.isSelected = selected;
             }
 
+            state = updateHighlightedDigit(state);
+
             return state;
         }
         case ActionType.DeselectAllCells: {
             for (const cellState of state.cells.values()) {
                 cellState.isSelected = false;
             }
-            return { ...state };
+
+            return { ...state, highlightValue: null };
         }
         case ActionType.EditValue: {
             const { coordinate, value } = action;
@@ -269,4 +274,28 @@ export function useGameState(
     );
 
     return [state, gameStateUpdater];
+}
+
+function updateHighlightedDigit(state: GameBoardState): GameBoardState {
+    const selectedCells = Array.from(state.cells.values()).filter((cell) => cell.isSelected);
+    if (selectedCells.length === 0) {
+        if (state.highlightValue !== null) {
+            return { ...state, highlightValue: null };
+        }
+        return state;
+    }
+
+    if (selectedCells.length === 1) {
+        const cell = selectedCells[0];
+        if (cell.value !== null) {
+            return { ...state, highlightValue: cell.value };
+        } else {
+            return { ...state, highlightValue: null };
+        }
+    }
+
+    if (state.highlightValue !== null) {
+        return { ...state, highlightValue: null };
+    }
+    return state;
 }

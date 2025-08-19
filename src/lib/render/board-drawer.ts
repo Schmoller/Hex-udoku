@@ -76,6 +76,7 @@ function drawBackgroundLayer(
         if (cell.backgroundType !== 'none') {
             switch (cell.backgroundType) {
                 case 'selected':
+                case 'highlighted':
                     ctx.fillStyle = styles.selectedColor;
                     break;
             }
