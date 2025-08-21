@@ -16,6 +16,10 @@ export default defineConfig({
                 'icons/apple-touch-icon.png',
                 'icons/icon-192.png',
                 'icons/icon-512.png',
+                'fonts/Dosis-Regular.ttf',
+                'fonts/Dosis-SemiBold.ttf',
+                'fonts/Dosis-Light.ttf',
+                'fonts/OFL.txt',
             ],
             manifest: {
                 name: 'Hex-udoku',

@@ -1,6 +1,31 @@
 @import 'tailwindcss';
 @plugin 'daisyui';
 
+@font-face {
+    font-family: 'Dosis';
+    src: url('/fonts/Dosis-Regular.ttf') format('truetype');
+    font-weight: 400;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Dosis';
+    src: url('/fonts/Dosis-SemiBold.ttf') format('truetype');
+    font-weight: 600;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Dosis';
+    src: url('/fonts/Dosis-Light.ttf') format('truetype');
+    font-weight: 300;
+    font-style: normal;
+}
+
+@theme {
+    --font-sans: Dosis, sans-serif;
+}
+
 :root {
     --game-board-line-color: var(--color-base-content);
     --game-board-clue-color: var(--color-base-content);

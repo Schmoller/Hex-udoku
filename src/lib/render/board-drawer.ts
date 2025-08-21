@@ -134,7 +134,7 @@ function drawForegroundLayer(
                     ctx.fillStyle = styles.wrongColor;
                     break;
             }
-            ctx.font = `bold ${digitFontSize}px monospace`;
+            ctx.font = `bold ${digitFontSize}px Dosis`;
             drawHexagonContents(ctx, x, y, cell.contents);
         }
 
@@ -142,7 +142,7 @@ function drawForegroundLayer(
             ctx.fillStyle = styles.noteCenterColor;
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
-            ctx.font = `${markerFontSize}px Arial`;
+            ctx.font = `${markerFontSize}px Dosis`;
             ctx.fillText(cell.centerMarkings, x, y);
         }
 
@@ -150,7 +150,7 @@ function drawForegroundLayer(
             ctx.fillStyle = styles.noteOuterColor;
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
-            ctx.font = `${markerFontSize}px Arial`;
+            ctx.font = `${markerFontSize}px Dosis`;
 
             let startAngle = -((cell.outerMarkings.length - 1) / 2) * OuterNoteArc;
             for (const mark of cell.outerMarkings) {
