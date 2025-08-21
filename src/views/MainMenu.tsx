@@ -1,12 +1,9 @@
 import type { FC } from 'react';
 import { usePersistedStateAtPointInTime } from '../lib/state-persistence';
+import { useOverallStateStore } from '../store/overall-state';
 
-interface MainMenuProps {
-    onContinue: () => void;
-    onNewGame: () => void;
-}
-
-export const MainMenu: FC<MainMenuProps> = ({ onContinue, onNewGame }) => {
+export const MainMenu: FC = () => {
+    const { startNewGame, loadAndContinueGame } = useOverallStateStore();
     const existingState = usePersistedStateAtPointInTime();
 
     return (
@@ -15,11 +12,11 @@ export const MainMenu: FC<MainMenuProps> = ({ onContinue, onNewGame }) => {
                 <img src="/icons/icon-512.png" />
                 <h1 className="text-5xl text-center font-semibold mb-16">hex-udoku</h1>
                 {existingState && !existingState.isComplete && (
-                    <button className="btn btn-xl btn-primary" onClick={onContinue}>
+                    <button className="btn btn-xl btn-primary" onClick={loadAndContinueGame}>
                         Continue
                     </button>
                 )}
-                <button className="btn btn-xl" onClick={onNewGame}>
+                <button className="btn btn-xl" onClick={() => startNewGame({ width: 9, height: 9 })}>
                     New game
                 </button>
                 {/* <button className="btn btn-xl">How to play</button>
