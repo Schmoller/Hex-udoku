@@ -1,12 +1,9 @@
 import { MainLayout } from './layouts/MainLayout';
 import { GameLoadingContainer } from './views/game/GameLoadingContainer';
+import { ViewController } from './views/ViewController';
 
 function App() {
-    return (
-        <MainLayout>
-            <GameLoadingContainer />
-        </MainLayout>
-    );
+    return <ViewController />;
 }
 
 export default App;

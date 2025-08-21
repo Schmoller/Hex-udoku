@@ -5,6 +5,7 @@ import { GameBoardUI } from './GameBoardUI';
 import { ControlPad } from './control-pad/ControlPad';
 import { DigitMode } from './common';
 import { GameCompleteModal } from './GameCompleteModal';
+import { usePersistState } from '../../lib/state-persistence';
 
 interface GameContainerProps {
     boardInitialiser: Promise<GameBoardState>;
@@ -15,6 +16,9 @@ export const GameContainer: FC<GameContainerProps> = ({ boardInitialiser, metada
     const [showDebugInfo, setShowDebugInfo] = useState(false);
 
     const [state, updater] = useGameState(metadata, boardInitialiser);
+
+    usePersistState(state);
+
     const [explicitDigitMode, setExplicitDigitMode] = useState<DigitMode>(DigitMode.Single);
     const [implicitDigitMode, setImplicitDigitMode] = useState<DigitMode | null>(null);
 
