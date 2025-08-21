@@ -36,10 +36,13 @@ export function loadPersistedState(): GameBoardState | null {
 
 /**
  * Retrieves the persisted state when the component mounts.
- * This does not update the state on changes.
+ * Changes to persisted state will not trigger re-renders.
  * @returns The persisted game state, or null if no state is found.
  */
-export function usePersistedStateAtPointInTime(): GameBoardState | null {
-    const state = useMemo(() => loadPersistedState(), []);
-    return state;
+export function usePersistedState(): GameBoardState | null {
+    try {
+        return loadPersistedState();
+    } catch (error) {
+        return null;
+    }
 }

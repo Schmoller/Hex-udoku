@@ -1,10 +1,10 @@
 import type { FC } from 'react';
-import { usePersistedStateAtPointInTime } from '../lib/state-persistence';
+import { usePersistedState } from '../lib/state-persistence';
 import { useOverallStateStore } from '../store/overall-state';
 
 export const MainMenu: FC = () => {
     const { startNewGame, loadAndContinueGame } = useOverallStateStore();
-    const existingState = usePersistedStateAtPointInTime();
+    const existingState = usePersistedState();
 
     return (
         <div className="grid place-content-center h-lvh">

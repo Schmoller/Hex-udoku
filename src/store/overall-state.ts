@@ -15,7 +15,7 @@ interface OverallGameState {
 }
 
 interface OverallStateActions {
-    setView: (view: View) => void;
+    showMainMenu: () => void;
     startNewGame: (metadata: GameMetadata) => void;
     loadAndContinueGame: () => void;
 }
@@ -25,7 +25,13 @@ export const useOverallStateStore = create<OverallGameState & OverallStateAction
     gameStateLoader: null,
     gameMetadata: null,
 
-    setView: (view) => set({ currentView: view }),
+    showMainMenu: () => {
+        set({
+            currentView: View.MainMenu,
+            gameStateLoader: null,
+            gameMetadata: null,
+        });
+    },
     startNewGame: (metadata) => {
         const loader = asyncGenerateNewBoard(metadata);
         set({
