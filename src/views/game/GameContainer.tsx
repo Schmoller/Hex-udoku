@@ -22,13 +22,13 @@ export const GameContainer: FC<GameContainerProps> = ({ boardInitialiser, metada
 
     const { history, currentIndex, push, reset } = useGameHistory();
 
-    // Set right before calling updater.newGame() so the next history push
-    // starts a fresh history instead of appending to the previous game's.
-    const isNewGameRef = useRef(false);
+    // Set right before starting or restarting a game so the next history push
+    // starts a fresh history instead of appending to the previous one's.
+    const shouldResetHistoryRef = useRef(false);
 
     useEffect(() => {
-        if (isNewGameRef.current) {
-            isNewGameRef.current = false;
+        if (shouldResetHistoryRef.current) {
+            shouldResetHistoryRef.current = false;
             reset(state);
         } else {
             push(state);
@@ -69,9 +69,14 @@ export const GameContainer: FC<GameContainerProps> = ({ boardInitialiser, metada
     }, []);
 
     const handleNewGame = useCallback(() => {
-        isNewGameRef.current = true;
+        shouldResetHistoryRef.current = true;
         updater.newGame();
-    }, []);
+    }, [updater]);
+
+    const handleRestart = useCallback(() => {
+        shouldResetHistoryRef.current = true;
+        updater.restartGame();
+    }, [updater]);
 
     useEffect(() => {
         const handleKeyDown = (event: KeyboardEvent) => {
@@ -141,7 +146,7 @@ export const GameContainer: FC<GameContainerProps> = ({ boardInitialiser, metada
                     digitMode={digitMode}
                     onUpdateDigitMode={setExplicitDigitMode}
                     onClearSelected={handleClearSelected}
-                    onRestart={handleNewGame}
+                    onRestart={handleRestart}
                 />
             </div>
             <GameCompleteModal open={state.isComplete} onNewGameClick={handleNewGame} />

@@ -13,6 +13,7 @@ const enum ActionType {
     ToggleSelectedCellValues = 'toggleSelectedCellValues',
     ToggleSelectedCellCenterNote = 'toggleSelectedCellCenterNote',
     ToggleSelectedCellOuterNote = 'toggleSelectedCellOuterNote',
+    RestartGame = 'restartGame',
     NewGame = 'newGame',
     RestoreState = 'restoreState',
 }
@@ -26,6 +27,7 @@ type GameUpdateAction =
     | { type: ActionType.ToggleSelectedCellValues; value: number | null }
     | { type: ActionType.ToggleSelectedCellCenterNote; value: number }
     | { type: ActionType.ToggleSelectedCellOuterNote; value: number }
+    | { type: ActionType.RestartGame }
     | { type: ActionType.NewGame }
     | { type: ActionType.RestoreState; state: GameBoardState };
 
@@ -212,6 +214,24 @@ function gameStateReducer(metadata: GameMetadata, state: GameBoardState, action:
             state = updateBoardValidity(state);
             return state;
         }
+        case ActionType.RestartGame: {
+            state = cloneGameState(state);
+
+            // Restore back to the initial state, clearing anything the user entered
+            for (const cellState of state.cells.values()) {
+                cellState.isSelected = false;
+
+                if (!cellState.isEditable) {
+                    continue;
+                }
+
+                cellState.value = null;
+                cellState.centerNotes.clear();
+                cellState.outerNotes.clear();
+            }
+
+            return updateBoardValidity(state);
+        }
         case ActionType.NewGame: {
             return initialiseGameState(metadata);
         }
@@ -231,6 +251,8 @@ export interface GameStateUpdater {
     toggleSelectedCellValues(value: number | null): void;
     toggleSelectedCellCenterNote(value: number): void;
     toggleSelectedCellOuterNote(value: number): void;
+    /** Clears the player's progress, leaving the generated clues in place. */
+    restartGame(): void;
     newGame(): void;
     restoreState(state: GameBoardState): void;
 }
@@ -271,6 +293,9 @@ export function useGameState(
             },
             toggleSelectedCellOuterNote: (value: number) => {
                 dispatch({ type: ActionType.ToggleSelectedCellOuterNote, value });
+            },
+            restartGame: () => {
+                dispatch({ type: ActionType.RestartGame });
             },
             newGame: () => {
                 dispatch({ type: ActionType.NewGame });
