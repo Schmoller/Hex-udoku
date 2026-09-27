@@ -38,7 +38,6 @@ export function fillBoardWithRandomNumbers(board: GameBoardState, random: Random
         // Step three: Ensure that it hasn't made a repeating pattern
         // The hex grid allows for each box to have the same digits in the same order.
         // This makes a boring puzzle, so if we have this situation, retry the fill
-        let isRepeating = true;
         for (let i = 0; i < Digits; i++) {
             const firstCell = group1[i];
             const secondCell = group2[i];
