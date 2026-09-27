@@ -1,20 +1,23 @@
 import type { FC } from 'react';
-import { useGameHistory } from '../../../store/history-state';
 import { UndoIcon } from '../../../assets/icons/Undo';
 import { RedoIcon } from '../../../assets/icons/Redo';
 
-export const HistoryPad: FC = () => {
-    const { hasNext, hasPrevious, back, forward, currentIndex } = useGameHistory();
+export interface HistoryPadProps {
+    canUndo: boolean;
+    canRedo: boolean;
+    onUndo: () => void;
+    onRedo: () => void;
+}
 
+export const HistoryPad: FC<HistoryPadProps> = ({ canUndo, canRedo, onUndo, onRedo }) => {
     return (
         <>
-            <button className="btn btn-ghost" title="Undo" disabled={!hasPrevious} onClick={back}>
+            <button className="btn btn-ghost" title="Undo" disabled={!canUndo} onClick={onUndo}>
                 <div>
                     <UndoIcon />
                 </div>
-                {currentIndex}
             </button>
-            <button className="btn btn-ghost" title="Redo" disabled={!hasNext} onClick={forward}>
+            <button className="btn btn-ghost" title="Redo" disabled={!canRedo} onClick={onRedo}>
                 <div>
                     <RedoIcon />
                 </div>

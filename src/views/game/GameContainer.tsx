@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState, type FC } from 'react';
+import { useCallback, useEffect, useState, type FC } from 'react';
 import { type GameBoardState, type GameMetadata } from '../../lib/board';
 import { useGameState } from '../../lib/state-reducer';
 import { GameBoardUI } from './GameBoardUI';
@@ -6,7 +6,7 @@ import { ControlPad } from './control-pad/ControlPad';
 import { DigitMode } from './common';
 import { GameCompleteModal } from './GameCompleteModal';
 import { usePersistState } from '../../lib/state-persistence';
-import { useGameHistory } from '../../store/history-state';
+import { canRedo, canUndo } from '../../lib/history';
 
 interface GameContainerProps {
     boardInitialiser: Promise<GameBoardState>;
@@ -16,35 +16,10 @@ interface GameContainerProps {
 export const GameContainer: FC<GameContainerProps> = ({ boardInitialiser, metadata }) => {
     const [showDebugInfo, setShowDebugInfo] = useState(false);
 
-    const [state, updater] = useGameState(metadata, boardInitialiser);
+    const [session, updater] = useGameState(metadata, boardInitialiser);
+    const { board, history } = session;
 
-    usePersistState(state);
-
-    const { history, currentIndex, push, reset } = useGameHistory();
-
-    // Set right before starting or restarting a game so the next history push
-    // starts a fresh history instead of appending to the previous one's.
-    const shouldResetHistoryRef = useRef(false);
-
-    useEffect(() => {
-        if (shouldResetHistoryRef.current) {
-            shouldResetHistoryRef.current = false;
-            reset(state);
-        } else {
-            push(state);
-        }
-    }, [state, push, reset]);
-
-    // Applies the state at the current history index back into the game, but
-    // only when it was moved there by undo/redo: after a push, history[currentIndex]
-    // is state itself, so this is a no-op and doesn't fight the effect above.
-    useEffect(() => {
-        const target = history[currentIndex];
-        if (target && target !== state) {
-            updater.restoreState(target);
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [currentIndex]);
+    usePersistState(board);
 
     const [explicitDigitMode, setExplicitDigitMode] = useState<DigitMode>(DigitMode.Single);
     const [implicitDigitMode, setImplicitDigitMode] = useState<DigitMode | null>(null);
@@ -69,12 +44,10 @@ export const GameContainer: FC<GameContainerProps> = ({ boardInitialiser, metada
     }, []);
 
     const handleNewGame = useCallback(() => {
-        shouldResetHistoryRef.current = true;
         updater.newGame();
     }, [updater]);
 
     const handleRestart = useCallback(() => {
-        shouldResetHistoryRef.current = true;
         updater.restartGame();
     }, [updater]);
 
@@ -138,7 +111,7 @@ export const GameContainer: FC<GameContainerProps> = ({ boardInitialiser, metada
 
     return (
         <div className="flex flex-grow flex-col items-stretch gap-2 w-full sm:w-xl max-h-[50rem] justify-end md:justify-start">
-            <GameBoardUI meta={metadata} state={state} showDebugInfo={showDebugInfo} gameUpdater={updater} />
+            <GameBoardUI meta={metadata} state={board} showDebugInfo={showDebugInfo} gameUpdater={updater} />
             <div>
                 <ControlPad
                     digits={7}
@@ -147,9 +120,13 @@ export const GameContainer: FC<GameContainerProps> = ({ boardInitialiser, metada
                     onUpdateDigitMode={setExplicitDigitMode}
                     onClearSelected={handleClearSelected}
                     onRestart={handleRestart}
+                    canUndo={canUndo(history)}
+                    canRedo={canRedo(history)}
+                    onUndo={updater.undo}
+                    onRedo={updater.redo}
                 />
             </div>
-            <GameCompleteModal open={state.isComplete} onNewGameClick={handleNewGame} />
+            <GameCompleteModal open={board.isComplete} onNewGameClick={handleNewGame} />
         </div>
     );
 };

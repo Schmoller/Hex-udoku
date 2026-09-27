@@ -4,9 +4,9 @@ import { ModeSelectPad, type ModeSelectPadProps } from './ModeSelectPad';
 import { ClearIcon } from '../../../assets/icons/Clear';
 import { RestartIcon } from '../../../assets/icons/Restart';
 import { GameRestartModal } from '../GameRestartModal';
-import { HistoryPad } from './HistoryPad';
+import { HistoryPad, type HistoryPadProps } from './HistoryPad';
 
-interface ControlPadProps extends NumberPadProps, ModeSelectPadProps {
+interface ControlPadProps extends NumberPadProps, ModeSelectPadProps, HistoryPadProps {
     onClearSelected: () => void;
     onRestart: () => void;
 }
@@ -16,6 +16,10 @@ export const ControlPad: FC<ControlPadProps> = ({
     onUpdateDigitMode,
     onClearSelected,
     onRestart,
+    canUndo,
+    canRedo,
+    onUndo,
+    onRedo,
     ...props
 }) => {
     const [showRestartConfirmation, setShowRestartConfirmation] = useState(false);
@@ -30,7 +34,7 @@ export const ControlPad: FC<ControlPadProps> = ({
                     <ClearIcon />
                 </div>
             </button>
-            <HistoryPad />
+            <HistoryPad canUndo={canUndo} canRedo={canRedo} onUndo={onUndo} onRedo={onRedo} />
             <button
                 className="btn btn-ghost btn-error col-start-7"
                 title="Restart game"

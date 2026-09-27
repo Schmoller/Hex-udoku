@@ -3,8 +3,24 @@ import { cloneGameState, type GameBoardState, type GameMetadata, initialiseGameS
 import type { HexCoordinate } from './coordinates';
 import { updateBoardValidity } from './validity';
 import { clearNotesInAppropriateCells } from './utils/note-clearer';
+import {
+    createHistory,
+    currentHistoryState,
+    recordHistory,
+    redoHistory,
+    undoHistory,
+    type GameHistory,
+} from './history';
 
-const enum ActionType {
+/**
+ * Everything that makes up a game in progress: the board the player sees, and how they got there.
+ */
+export interface GameSession {
+    readonly board: GameBoardState;
+    readonly history: GameHistory;
+}
+
+export const enum ActionType {
     RestartSelection = 'restartSelection',
     SetCellSelection = 'setCellSelection',
     DeselectAllCells = 'deselectAllCells',
@@ -13,12 +29,13 @@ const enum ActionType {
     ToggleSelectedCellValues = 'toggleSelectedCellValues',
     ToggleSelectedCellCenterNote = 'toggleSelectedCellCenterNote',
     ToggleSelectedCellOuterNote = 'toggleSelectedCellOuterNote',
+    Undo = 'undo',
+    Redo = 'redo',
     RestartGame = 'restartGame',
     NewGame = 'newGame',
-    RestoreState = 'restoreState',
 }
 
-type GameUpdateAction =
+export type GameUpdateAction =
     | { type: ActionType.RestartSelection; coordinate: HexCoordinate }
     | { type: ActionType.SetCellSelection; coordinate: HexCoordinate; selected: boolean }
     | { type: ActionType.DeselectAllCells }
@@ -27,11 +44,94 @@ type GameUpdateAction =
     | { type: ActionType.ToggleSelectedCellValues; value: number | null }
     | { type: ActionType.ToggleSelectedCellCenterNote; value: number }
     | { type: ActionType.ToggleSelectedCellOuterNote; value: number }
+    | { type: ActionType.Undo }
+    | { type: ActionType.Redo }
     | { type: ActionType.RestartGame }
-    | { type: ActionType.NewGame }
-    | { type: ActionType.RestoreState; state: GameBoardState };
+    | { type: ActionType.NewGame };
 
-function gameStateReducer(metadata: GameMetadata, state: GameBoardState, action: GameUpdateAction): GameBoardState {
+/**
+ * Actions that step through the history rather than changing the board, and so must not be
+ * recorded as history themselves.
+ */
+type HistoryAction = Extract<GameUpdateAction, { type: ActionType.Undo | ActionType.Redo }>;
+
+/**
+ * Actions that begin a game, which start the history over rather than appending to it.
+ */
+type NewSessionAction = Extract<GameUpdateAction, { type: ActionType.NewGame | ActionType.RestartGame }>;
+
+/**
+ * Actions that change the board the player is working on.
+ */
+type BoardAction = Exclude<GameUpdateAction, HistoryAction | NewSessionAction>;
+
+export function gameSessionReducer(
+    metadata: GameMetadata,
+    session: GameSession,
+    action: GameUpdateAction,
+): GameSession {
+    switch (action.type) {
+        case ActionType.Undo:
+            return moveThroughHistory(session, undoHistory(session.history));
+        case ActionType.Redo:
+            return moveThroughHistory(session, redoHistory(session.history));
+        case ActionType.NewGame:
+            return startSession(initialiseGameState(metadata));
+        case ActionType.RestartGame:
+            // Restarting throws the player's progress away, which the confirmation warns about,
+            // so the history it built up goes with it
+            return startSession(restartBoard(session.board));
+        default: {
+            const board = boardReducer(session.board, action);
+            return { board, history: recordHistory(session.history, board) };
+        }
+    }
+}
+
+/**
+ * Begins a session for a board, with a history containing nothing but that board.
+ */
+export function startSession(board: GameBoardState): GameSession {
+    return { board, history: createHistory(board) };
+}
+
+/**
+ * Points the session at another entry in its history. The board follows the history rather than
+ * the other way around, so there is no round trip through an effect to keep the two in step.
+ */
+function moveThroughHistory(session: GameSession, history: GameHistory): GameSession {
+    if (history === session.history) {
+        return session;
+    }
+
+    return { board: currentHistoryState(history), history };
+}
+
+/**
+ * Returns the board as it was generated, clearing anything the player entered.
+ *
+ * The clues are exactly the cells the player was never allowed to touch, so clearing everything
+ * editable is enough to get there without having to hold on to a copy of the original board.
+ */
+function restartBoard(board: GameBoardState): GameBoardState {
+    const restarted = cloneGameState(board);
+
+    for (const cellState of restarted.cells.values()) {
+        cellState.isSelected = false;
+
+        if (!cellState.isEditable) {
+            continue;
+        }
+
+        cellState.value = null;
+        cellState.centerNotes.clear();
+        cellState.outerNotes.clear();
+    }
+
+    return updateBoardValidity(restarted);
+}
+
+function boardReducer(state: GameBoardState, action: BoardAction): GameBoardState {
     switch (action.type) {
         case ActionType.RestartSelection: {
             state = cloneGameState(state);
@@ -214,30 +314,6 @@ function gameStateReducer(metadata: GameMetadata, state: GameBoardState, action:
             state = updateBoardValidity(state);
             return state;
         }
-        case ActionType.RestartGame: {
-            state = cloneGameState(state);
-
-            // Restore back to the initial state, clearing anything the user entered
-            for (const cellState of state.cells.values()) {
-                cellState.isSelected = false;
-
-                if (!cellState.isEditable) {
-                    continue;
-                }
-
-                cellState.value = null;
-                cellState.centerNotes.clear();
-                cellState.outerNotes.clear();
-            }
-
-            return updateBoardValidity(state);
-        }
-        case ActionType.NewGame: {
-            return initialiseGameState(metadata);
-        }
-        case ActionType.RestoreState: {
-            return action.state;
-        }
     }
     return state;
 }
@@ -251,21 +327,25 @@ export interface GameStateUpdater {
     toggleSelectedCellValues(value: number | null): void;
     toggleSelectedCellCenterNote(value: number): void;
     toggleSelectedCellOuterNote(value: number): void;
+    /** Steps back to the previous board, if there is one. */
+    undo(): void;
+    /** Steps forward to the next board, if there is one. */
+    redo(): void;
     /** Clears the player's progress, leaving the generated clues in place. */
     restartGame(): void;
     newGame(): void;
-    restoreState(state: GameBoardState): void;
 }
 
 export function useGameState(
     metadata: GameMetadata,
     initialiser: Promise<GameBoardState>,
-): [GameBoardState, GameStateUpdater] {
+): [GameSession, GameStateUpdater] {
     const initialGameState = use(initialiser);
 
-    const [state, dispatch] = useReducer<GameBoardState, [GameUpdateAction]>(
-        gameStateReducer.bind(undefined, metadata),
+    const [session, dispatch] = useReducer<GameSession, GameBoardState, [GameUpdateAction]>(
+        gameSessionReducer.bind(undefined, metadata),
         initialGameState,
+        startSession,
     );
 
     const gameStateUpdater = useMemo<GameStateUpdater>(
@@ -294,20 +374,23 @@ export function useGameState(
             toggleSelectedCellOuterNote: (value: number) => {
                 dispatch({ type: ActionType.ToggleSelectedCellOuterNote, value });
             },
+            undo: () => {
+                dispatch({ type: ActionType.Undo });
+            },
+            redo: () => {
+                dispatch({ type: ActionType.Redo });
+            },
             restartGame: () => {
                 dispatch({ type: ActionType.RestartGame });
             },
             newGame: () => {
                 dispatch({ type: ActionType.NewGame });
             },
-            restoreState: (state: GameBoardState) => {
-                dispatch({ type: ActionType.RestoreState, state });
-            },
         }),
         [dispatch],
     );
 
-    return [state, gameStateUpdater];
+    return [session, gameStateUpdater];
 }
 
 function updateHighlightedDigit(state: GameBoardState): GameBoardState {
