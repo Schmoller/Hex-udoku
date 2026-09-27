@@ -14,6 +14,7 @@ const enum ActionType {
     ToggleSelectedCellCenterNote = 'toggleSelectedCellCenterNote',
     ToggleSelectedCellOuterNote = 'toggleSelectedCellOuterNote',
     NewGame = 'newGame',
+    RestoreState = 'restoreState',
 }
 
 type GameUpdateAction =
@@ -25,7 +26,8 @@ type GameUpdateAction =
     | { type: ActionType.ToggleSelectedCellValues; value: number | null }
     | { type: ActionType.ToggleSelectedCellCenterNote; value: number }
     | { type: ActionType.ToggleSelectedCellOuterNote; value: number }
-    | { type: ActionType.NewGame };
+    | { type: ActionType.NewGame }
+    | { type: ActionType.RestoreState; state: GameBoardState };
 
 function gameStateReducer(metadata: GameMetadata, state: GameBoardState, action: GameUpdateAction): GameBoardState {
     switch (action.type) {
@@ -213,6 +215,9 @@ function gameStateReducer(metadata: GameMetadata, state: GameBoardState, action:
         case ActionType.NewGame: {
             return initialiseGameState(metadata);
         }
+        case ActionType.RestoreState: {
+            return action.state;
+        }
     }
     return state;
 }
@@ -227,6 +232,7 @@ export interface GameStateUpdater {
     toggleSelectedCellCenterNote(value: number): void;
     toggleSelectedCellOuterNote(value: number): void;
     newGame(): void;
+    restoreState(state: GameBoardState): void;
 }
 
 export function useGameState(
@@ -268,6 +274,9 @@ export function useGameState(
             },
             newGame: () => {
                 dispatch({ type: ActionType.NewGame });
+            },
+            restoreState: (state: GameBoardState) => {
+                dispatch({ type: ActionType.RestoreState, state });
             },
         }),
         [dispatch],

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState, type FC } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type FC } from 'react';
 import { type GameBoardState, type GameMetadata } from '../../lib/board';
 import { useGameState } from '../../lib/state-reducer';
 import { GameBoardUI } from './GameBoardUI';
@@ -6,6 +6,7 @@ import { ControlPad } from './control-pad/ControlPad';
 import { DigitMode } from './common';
 import { GameCompleteModal } from './GameCompleteModal';
 import { usePersistState } from '../../lib/state-persistence';
+import { useGameHistory } from '../../store/history-state';
 
 interface GameContainerProps {
     boardInitialiser: Promise<GameBoardState>;
@@ -18,6 +19,32 @@ export const GameContainer: FC<GameContainerProps> = ({ boardInitialiser, metada
     const [state, updater] = useGameState(metadata, boardInitialiser);
 
     usePersistState(state);
+
+    const { history, currentIndex, push, reset } = useGameHistory();
+
+    // Set right before calling updater.newGame() so the next history push
+    // starts a fresh history instead of appending to the previous game's.
+    const isNewGameRef = useRef(false);
+
+    useEffect(() => {
+        if (isNewGameRef.current) {
+            isNewGameRef.current = false;
+            reset(state);
+        } else {
+            push(state);
+        }
+    }, [state, push, reset]);
+
+    // Applies the state at the current history index back into the game, but
+    // only when it was moved there by undo/redo: after a push, history[currentIndex]
+    // is state itself, so this is a no-op and doesn't fight the effect above.
+    useEffect(() => {
+        const target = history[currentIndex];
+        if (target && target !== state) {
+            updater.restoreState(target);
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [currentIndex]);
 
     const [explicitDigitMode, setExplicitDigitMode] = useState<DigitMode>(DigitMode.Single);
     const [implicitDigitMode, setImplicitDigitMode] = useState<DigitMode | null>(null);
@@ -42,6 +69,7 @@ export const GameContainer: FC<GameContainerProps> = ({ boardInitialiser, metada
     }, []);
 
     const handleNewGame = useCallback(() => {
+        isNewGameRef.current = true;
         updater.newGame();
     }, []);
 
