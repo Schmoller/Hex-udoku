@@ -5,6 +5,7 @@ import { loadPersistedState } from '../lib/state-persistence';
 
 export const enum View {
     MainMenu,
+    DifficultySelect,
     Playing,
 }
 
@@ -16,6 +17,7 @@ interface OverallGameState {
 
 interface OverallStateActions {
     showMainMenu: () => void;
+    showDifficultySelect: () => void;
     startNewGame: (metadata: GameMetadata) => void;
     loadAndContinueGame: () => void;
 }
@@ -28,6 +30,13 @@ export const useOverallStateStore = create<OverallGameState & OverallStateAction
     showMainMenu: () => {
         set({
             currentView: View.MainMenu,
+            gameStateLoader: null,
+            gameMetadata: null,
+        });
+    },
+    showDifficultySelect: () => {
+        set({
+            currentView: View.DifficultySelect,
             gameStateLoader: null,
             gameMetadata: null,
         });

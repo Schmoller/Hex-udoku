@@ -3,7 +3,8 @@ import { cloneCellState, type CellState } from './cell';
 import { HexCoordinate } from './coordinates';
 import { generateFlowerGridBoard } from './presets/flower-grid';
 import { fillBoardWithRandomNumbers } from './generator/fill';
-import { pruneBoard } from './generator/prune';
+import { pruneBoardToDifficulty, type PruneResult } from './generator/prune';
+import { Difficulty } from './generator/difficulty';
 
 /**
  * GameMetadata interface represents the metadata of a game board.
@@ -12,6 +13,11 @@ import { pruneBoard } from './generator/prune';
 export interface GameMetadata {
     readonly width: number;
     readonly height: number;
+
+    /**
+     * How hard the generated puzzle should be. Defaults to DefaultDifficulty when not given.
+     */
+    readonly difficulty?: Difficulty;
 }
 
 /**
@@ -105,9 +111,23 @@ export function getUnit(board: GameBoardState, start: HexCoordinate, unitType: U
     return unit;
 }
 
+/**
+ * The difficulty used when the metadata does not ask for one.
+ */
+export const DefaultDifficulty = Difficulty.Moderate;
+
+/**
+ * How many times to fill a fresh solution when pruning cannot reach the requested difficulty.
+ *
+ * Pruning already retries many times against a single solution, so needing a second solution at
+ * all is rare. This is a backstop rather than something the generator leans on.
+ */
+const MaxFillAttempts = 3;
+
 export function initialiseGameState(metadata: GameMetadata): GameBoardState {
     // const { width, height } = metadata;
 
+    const difficulty = metadata.difficulty ?? DefaultDifficulty;
     const generateResult = generateFlowerGridBoard();
 
     const board: GameBoardState = {
@@ -117,8 +137,22 @@ export function initialiseGameState(metadata: GameMetadata): GameBoardState {
     };
 
     const random = new Random();
-    fillBoardWithRandomNumbers(board, random);
-    pruneBoard(board, 15, random);
+
+    let result: PruneResult | null = null;
+    for (let attempt = 1; attempt <= MaxFillAttempts && !result?.isRequestedDifficulty; attempt++) {
+        // Filling clears the board first, so a rejected puzzle from the previous attempt is
+        // simply replaced
+        fillBoardWithRandomNumbers(board, random);
+        result = pruneBoardToDifficulty(board, difficulty, random);
+    }
+
+    if (result && !result.isRequestedDifficulty) {
+        console.warn(
+            `Could not generate a ${difficulty} puzzle, falling back to the closest found: ` +
+                `${result.clueCount} clues, ${result.profile.hardSteps} steps beyond singles, ` +
+                `${result.profile.isSolved ? 'solvable by logic' : 'needs guessing'}`,
+        );
+    }
 
     return board;
 }

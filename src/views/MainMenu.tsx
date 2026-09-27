@@ -3,7 +3,7 @@ import { usePersistedState } from '../lib/state-persistence';
 import { useOverallStateStore } from '../store/overall-state';
 
 export const MainMenu: FC = () => {
-    const { startNewGame, loadAndContinueGame } = useOverallStateStore();
+    const { startNewGame, loadAndContinueGame, showDifficultySelect } = useOverallStateStore();
     const existingState = usePersistedState();
 
     return (
@@ -16,7 +16,7 @@ export const MainMenu: FC = () => {
                         Continue
                     </button>
                 )}
-                <button className="btn btn-xl" onClick={() => startNewGame({ width: 9, height: 9 })}>
+                <button className="btn btn-xl" onClick={() => showDifficultySelect()}>
                     New game
                 </button>
                 {/* <button className="btn btn-xl">How to play</button>

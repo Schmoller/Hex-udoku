@@ -23,6 +23,22 @@ export interface SolverIndex {
     readonly peers: readonly (readonly number[])[];
 
     /**
+     * Every distinct unit on the board, as cell indices. Each unit appears once, however many
+     * of its cells were used to discover it.
+     */
+    readonly units: readonly (readonly number[])[];
+
+    /**
+     * The subset of units that are long enough to hold every digit.
+     *
+     * Only these units support reasoning of the form "this digit has to go somewhere in here",
+     * which covers hidden singles, hidden subsets and locked candidates. The rank units along
+     * the edges of the board are shorter than the digit count, so they hold only some of the
+     * digits and which ones is not known up front.
+     */
+    readonly fullUnits: readonly (readonly number[])[];
+
+    /**
      * How many distinct digits the board uses. Digits are 1..digitCount.
      */
     readonly digitCount: number;
@@ -45,25 +61,37 @@ export function buildSolverIndex(board: GameBoardState): SolverIndex {
         indexOfCell.set(cells[i], i);
     }
 
-    const peerSets = cells.map(() => new Set<number>());
+    // getUnit reports the same unit once for every cell it contains, so collect them by their
+    // membership to end up with each unit exactly once
+    const unitsByMembership = new Map<string, number[]>();
 
-    // A digit must appear once in every group, so the largest unit tells us how many digits exist.
-    // The rank units along the edges of the board are shorter than this.
-    let digitCount = 0;
-
-    for (let i = 0; i < cells.length; i++) {
+    for (const cell of cells) {
         for (const unitType of AllUnitTypes) {
-            const unit = getUnit(board, cells[i].coordinate, unitType);
-            digitCount = Math.max(digitCount, unit.length);
-
-            for (const other of unit) {
+            const members = getUnit(board, cell.coordinate, unitType).map((other) => {
                 const j = indexOfCell.get(other);
                 if (j === undefined) {
                     throw new Error('Assertion: unit contained a cell that is not on the board');
                 }
+                return j;
+            });
 
-                if (j !== i) {
-                    peerSets[i].add(j);
+            members.sort((a, b) => a - b);
+            unitsByMembership.set(members.join(','), members);
+        }
+    }
+
+    // A unit of a single cell constrains nothing, so it is not worth carrying around
+    const units = [...unitsByMembership.values()].filter((unit) => unit.length > 1);
+
+    // A digit must appear once in every group, so the largest unit tells us how many digits exist
+    const digitCount = units.reduce((largest, unit) => Math.max(largest, unit.length), 0);
+
+    const peerSets = cells.map(() => new Set<number>());
+    for (const unit of units) {
+        for (const a of unit) {
+            for (const b of unit) {
+                if (a !== b) {
+                    peerSets[a].add(b);
                 }
             }
         }
@@ -72,6 +100,8 @@ export function buildSolverIndex(board: GameBoardState): SolverIndex {
     return {
         cells,
         peers: peerSets.map((set) => [...set]),
+        units,
+        fullUnits: units.filter((unit) => unit.length === digitCount),
         digitCount,
     };
 }
