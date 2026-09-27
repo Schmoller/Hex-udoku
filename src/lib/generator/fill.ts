@@ -61,16 +61,6 @@ function clearBoard(board: GameBoardState): void {
     }
 }
 
-function fillGroupWithRandomNumbers(group: CellState[], random: Random): void {
-    const digits = random.shuffle(AllValidDigits);
-
-    for (let i = 0; i < group.length; i++) {
-        const cell = group[i];
-        cell.value = digits[i];
-        cell.isEditable = false;
-    }
-}
-
 function tryFillWithValidRandomNumbers(
     board: GameBoardState,
     cells: CellState[],
